@@ -11,7 +11,6 @@ import ast
 from dbhelper import dbhelper
 from  utils import KEY
 
-
   
 '''
 add a new account to database.
