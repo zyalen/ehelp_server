@@ -857,5 +857,3 @@ def is_sign_in(user_id):
     result = False
   finally:
     return result
-
-
