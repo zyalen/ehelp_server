@@ -822,7 +822,6 @@ user could sign in once a day. Especially, if user has signed in today, this met
         False otherwise.
 '''
 def sign_in(data):
-  #if KEY.ID not in data:
   if KEY.ID not in data or KEY.USER_ID not in data:
     return False
   user_id = data[KEY.USER_ID]
