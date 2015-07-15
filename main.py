@@ -2,6 +2,8 @@
 
 import tornado
 import tornado.httpserver
+import os
+import sys
 
 from handler import regist_handler
 from handler import login_handler
@@ -25,7 +27,8 @@ from handler import get_illness_records_handler
 from handler import user_relation_manage_handler
 from handler import sign_in_handler
 
-
+# Set up current directory to program directory
+os.chdir(os.path.join(os.getcwd(), os.path.dirname(sys.argv[0])))
 
 def main():
   port = 80
@@ -52,7 +55,7 @@ def main():
       (r"/illness/query", get_illness_records_handler.Get_Illness_Records_Handler),
       (r"/user/evaluate", user_relation_manage_handler.User_Relation_Manage_Handler),
       (r"/account/signin", sign_in_handler.Sign_In_Handler),
-
+      (r"/(.*)", tornado.web.StaticFileHandler, {"path": "static"})
     ])
   http_server = tornado.httpserver.HTTPServer(application)
   http_server.listen(port)

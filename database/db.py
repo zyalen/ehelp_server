@@ -825,7 +825,7 @@ user could sign in once a day. Especially, if user has signed in today, this met
 def sign_in(data):
   if KEY.ID not in data:
     return False
-  if is_sign_in(user_id):
+  if is_sign_in(KEY.ID):
     return False
   sql = "insert into sign_in (user_id, time) values (%d, now())"
   try:

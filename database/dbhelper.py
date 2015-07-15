@@ -38,6 +38,7 @@ class dbhelper:
   execute insert operation on database.
   '''
   @staticmethod
+
   def insert(sql):
     conn = dbhelper.connect()
     cursor = conn.cursor()
