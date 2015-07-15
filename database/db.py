@@ -11,7 +11,6 @@ import ast
 from dbhelper import dbhelper
 from  utils import KEY
 
-
   
 '''
 add a new account to database.
@@ -823,8 +822,9 @@ user could sign in once a day. Especially, if user has signed in today, this met
         False otherwise.
 '''
 def sign_in(data):
-  if KEY.ID not in data:
+  if KEY.ID not in data or KEY.USER_ID not in data:
     return False
+  user_id = data[KEY.USER_ID]
   if is_sign_in(user_id):
     return False
   sql = "insert into sign_in (user_id, time) values (%d, now())"
@@ -859,3 +859,44 @@ def is_sign_in(user_id):
     return result
 
 
+'''
+upload location of user's avatar to database.
+@param includes user_id, location of avatar.
+@return True if upload successfully.
+    False otherwise.
+'''
+def upload_avatar(data):
+  if KEY.ID not in data:
+    return False
+  sql = ""
+  if KEY.AVATAR in data:
+    data[KEY.AVATAR] = MySQLdb.escape_string(data[KEY.AVATAR].encode("utf8"))
+    sql = "update user set avatar = '%s' where id = %d"
+    try:
+      dbhelper.execute(sql%(data[KEY.AVATAR], data[KEY.ID]))
+      return True
+    except:
+      return False
+
+
+
+'''
+get the location of user's avatar.
+@param include user_id.
+@return a json includes user's concrete avatar locaton.
+           None if params error or database query error.
+'''
+def get_avatar(data):
+  if KEY.ID not in data:
+    return None
+  sql = "select avatar from user where id = %d"
+  try:
+    res = dbhelper.execute_fetchone(sql%(data[KEY.ID]))
+    if res is None:
+      return None
+    else:
+      user = {}
+      user[KEY.ID] = data[KEY.ID]
+      user[KEY.AVATAR] = res[0]
+  except:
+    return None
