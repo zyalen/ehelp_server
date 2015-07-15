@@ -24,6 +24,7 @@ from handler import add_illness_handler
 from handler import get_illness_records_handler
 from handler import user_relation_manage_handler
 from handler import sign_in_handler
+from handler import user_avatar_handler
 
 
 
@@ -36,6 +37,8 @@ def main():
       (r"/user/get_information", get_user_information_handler.Get_User_Information_Handler),
       (r"/user/modify_information", modify_user_information_handler.Modify_User_Information_Handler),
       (r"/account/modify_password", modify_password_handler.Modify_Password_Handler),
+      (r"/user/upload_avatar", user_avatar_handler.UploadAvatar_Handler),
+      (r"/user/get_avatar", user_avatar_handler.GetAvatar_Handler),
       (r"/event/add", add_event_handler.Add_Event_Handler),
       (r"/event/modify", update_event_handler.Update_Event_Handler),
       (r"/event/remove", remove_event_handler.Remove_Event_Handler),
