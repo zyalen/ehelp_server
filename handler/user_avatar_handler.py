@@ -15,10 +15,13 @@ upload avatar for the account
 '''
 class UploadAvatar_Handler(RequestHandler):
   def post(self):
-    filename = self.get_body_argument('filename')
     myfile = self.request.files['avatar'][0]
+    filename = myfile['filename']
+    index = filename.rfind('/')
+    if index != -1:
+      filename = filename[index + 1:]
     upload_path = "./static/avatar/" + filename
-    fin = open(upload_path, "w")
+    fin = open(upload_path, "wb")
     res = fin.write(myfile["body"])
     fin.close()
 
