@@ -17,9 +17,10 @@ class UploadAvatar_Handler(RequestHandler):
   def post(self):
     myfile = self.request.files['avatar'][0]
     filename = myfile['filename']
-    index = filename.rfind('/')
+    index = filename.rfind('\\')
     if index != -1:
       filename = filename[index + 1:]
+    print filename
     upload_path = "./static/avatar/" + filename
     fin = open(upload_path, "wb")
     res = fin.write(myfile["body"])

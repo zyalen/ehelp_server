@@ -2,6 +2,8 @@
 
 import tornado
 import tornado.httpserver
+import os
+import sys
 
 from handler import regist_handler
 from handler import login_handler
@@ -25,10 +27,10 @@ from handler import user_relation_manage_handler
 from handler import sign_in_handler
 from handler import user_avatar_handler
 
-
+os.chdir(os.path.join(os.getcwd(), os.path.dirname(sys.argv[0])))
 
 def main():
-  port = 80
+  port = 1501
   application = tornado.web.Application(
     handlers=[
       (r"/account/regist", regist_handler.Regist_Handler),
@@ -53,14 +55,12 @@ def main():
       (r"/illness/query", get_illness_records_handler.Get_Illness_Records_Handler),
       (r"/user/evaluate", user_relation_manage_handler.User_Relation_Manage_Handler),
       (r"/account/signin", sign_in_handler.Sign_In_Handler),
-
+      (r"/(.*)", tornado.web.StaticFileHandler, {"path": "static"}),
     ])
   http_server = tornado.httpserver.HTTPServer(application)
   http_server.listen(port)
 
   tornado.ioloop.IOLoop.instance().start()
 
-
 if __name__ == '__main__':
   main()
-

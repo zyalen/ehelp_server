@@ -133,6 +133,7 @@ DROP TABLE IF EXISTS `event`;
 CREATE TABLE `event` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `launcher` int(11) NOT NULL,
+  `title` varchar(200) DEFAULT NULL,
   `content` varchar(500) DEFAULT NULL,
   `type` int(11) NOT NULL DEFAULT '0',
   `time` datetime DEFAULT NULL,
