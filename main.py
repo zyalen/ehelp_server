@@ -19,13 +19,13 @@ from handler import user_event_manage_handler
 from handler import add_comment_handler
 from handler import remove_comment_handler
 from handler import get_comments_handler
-from handler import user_relation_manage_handler
 from handler import add_health_handler
 from handler import get_health_records_handler
 from handler import add_illness_handler
 from handler import get_illness_records_handler
 from handler import user_relation_manage_handler
 from handler import sign_in_handler
+from handler import user_avatar_handler
 
 # Set up current directory to program directory
 os.chdir(os.path.join(os.getcwd(), os.path.dirname(sys.argv[0])))
@@ -39,6 +39,7 @@ def main():
       (r"/user/get_information", get_user_information_handler.Get_User_Information_Handler),
       (r"/user/modify_information", modify_user_information_handler.Modify_User_Information_Handler),
       (r"/account/modify_password", modify_password_handler.Modify_Password_Handler),
+      (r"/user/upload_avatar", user_avatar_handler.UploadAvatar_Handler),
       (r"/event/add", add_event_handler.Add_Event_Handler),
       (r"/event/modify", update_event_handler.Update_Event_Handler),
       (r"/event/remove", remove_event_handler.Remove_Event_Handler),

@@ -11,7 +11,6 @@ import ast
 from dbhelper import dbhelper
 from  utils import KEY
 
-
   
 '''
 add a new account to database.
@@ -825,7 +824,8 @@ user could sign in once a day. Especially, if user has signed in today, this met
 def sign_in(data):
   if KEY.ID not in data:
     return False
-  if is_sign_in(KEY.ID):
+  user_id = data[KEY.ID]
+  if is_sign_in(user_id):
     return False
   sql = "insert into sign_in (user_id, time) values (%d, now())"
   try:
@@ -857,5 +857,3 @@ def is_sign_in(user_id):
     result = False
   finally:
     return result
-
-

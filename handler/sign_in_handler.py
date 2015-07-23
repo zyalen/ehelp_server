@@ -22,6 +22,3 @@ class Sign_In_Handler(RequestHandler):
       resp[KEY.STATUS] = STATUS.ERROR
     
     self.write(json_encode(resp))
-
-    
-
