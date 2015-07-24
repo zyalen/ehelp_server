@@ -266,7 +266,7 @@ launch a help event by launcher.
         -1 if fails.
 '''
 def add_event(data): 
-  if KEY.ID not in data or KEY.TYPE not in data:
+  if KEY.ID not in data or KEY.TYPE not in data or KEY.TITLE not in data:
     return -1
   sql = "insert into event (launcher, type, time) values (%d, %d, now())"
   event_id = -1
@@ -283,13 +283,21 @@ def add_event(data):
 '''
 modify information of a help event.
 @params  includes event_id, which is id of the event to be modified.
-         option params includes: content of event, longitude and latitude of event, state of event.
+         option params includes: title of event, content of event, longitude and latitude of event, state of event.
 @return True if successfully modifies.
         False otherwise.
 '''
 def update_event(data):
   result = True
   sql = ""
+  if KEY.TITLE in data:
+    data[KEY.TITLE] = MySQLdb.escape_string(data[KEY.TITLE].encode("utf8"))
+    sql = "update event set title = '%s' where id = %d"
+    try:
+      dbhelper.execute(sql%(data[KEY.TITLE], data[KEY.EVENT_ID]))
+      result &= True
+    except:
+      result &= False
   if KEY.CONTENT in data:
     data[KEY.CONTENT] = MySQLdb.escape_string(data[KEY.CONTENT].encode("utf8"))
     sql = "update event set content = '%s' where id = %d"
