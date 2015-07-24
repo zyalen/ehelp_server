@@ -137,6 +137,7 @@ CREATE TABLE `event` (
   `content` varchar(500) DEFAULT NULL,
   `type` int(11) NOT NULL DEFAULT '0',
   `time` datetime DEFAULT NULL,
+  `last_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `longitude` decimal(10,7) DEFAULT '999.9999999',
   `latitude` decimal(10,7) DEFAULT '999.9999999',
   `state` int(11) NOT NULL DEFAULT '0',

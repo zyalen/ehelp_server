@@ -356,15 +356,17 @@ def get_event_information(data):
       event_info = {}
       event_info[KEY.EVENT_ID] = sql_result[0]
       event_info[KEY.LAUNCHER_ID] = sql_result[1]
-      event_info[KEY.CONTENT] = sql_result[2]
-      event_info[KEY.TYPE] = sql_result[3]
-      event_info[KEY.TIME] = str(sql_result[4])
-      event_info[KEY.LONGITUDE] = float(sql_result[5])
-      event_info[KEY.LATITUDE] = float(sql_result[6])
-      event_info[KEY.STATE] = sql_result[7]
-      event_info[KEY.FOLLOW_NUMBER] = sql_result[8]
-      event_info[KEY.SUPPORT_NUMBER] = sql_result[9]
-      event_info[KEY.GROUP_PTS] = float(sql_result[10])
+      event_info[KEY.TITLE] = sql_result[2]
+      event_info[KEY.CONTENT] = sql_result[3]
+      event_info[KEY.TYPE] = sql_result[4]
+      event_info[KEY.TIME] = str(sql_result[5])
+      event_info[KEY.LAST_TIME] = str(sql_result[6])
+      event_info[KEY.LONGITUDE] = float(sql_result[7])
+      event_info[KEY.LATITUDE] = float(sql_result[8])
+      event_info[KEY.STATE] = sql_result[9]
+      event_info[KEY.FOLLOW_NUMBER] = sql_result[10]
+      event_info[KEY.SUPPORT_NUMBER] = sql_result[11]
+      event_info[KEY.GROUP_PTS] = float(sql_result[12])
       user = {}
       user[KEY.ID] = event_info[KEY.LAUNCHER_ID]
       user = get_user_information(user)
@@ -393,12 +395,12 @@ def get_events(data, get_event_id_list):
       event_list.append(event_info)
   return event_list
 
-
 '''
 get events that launch by user.
 @params includes user's id, 
                  option params includes state indicates all events or those starting or ended.
                  type indicates type of events.
+                 last_time indicates the last time client update
 @return an array of result event ids.
 '''
 def get_launch_event_list(data):
@@ -412,7 +414,9 @@ def get_launch_event_list(data):
   if KEY.TYPE in data:
     if data[KEY.TYPE] >= 0 and data[KEY.TYPE] <= 2:
       sql += " and type = %d"%data[KEY.TYPE]
-  sql += " order by time DESC"
+  if KEY.LAST_TIME in data:
+    sql += " and last_time > \"" + data[KEY.LAST_TIME] + "\""
+  # sql += " order by time DESC"
   sql_result = dbhelper.execute_fetchall(sql)
   for each_result in sql_result:
     for each_id in each_result:
