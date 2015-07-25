@@ -26,6 +26,7 @@ from handler import get_illness_records_handler
 from handler import user_relation_manage_handler
 from handler import sign_in_handler
 from handler import user_avatar_handler
+from handler import get_neighbor
 
 os.chdir(os.path.join(os.getcwd(), os.path.dirname(sys.argv[0])))
 
@@ -39,6 +40,7 @@ def main():
       (r"/user/modify_information", modify_user_information_handler.Modify_User_Information_Handler),
       (r"/account/modify_password", modify_password_handler.Modify_Password_Handler),
       (r"/user/upload_avatar", user_avatar_handler.UploadAvatar_Handler),
+      (r"/user/neighbor", get_neighbor.Get_Neighbor_Handler),
       (r"/event/add", add_event_handler.Add_Event_Handler),
       (r"/event/modify", update_event_handler.Update_Event_Handler),
       (r"/event/remove", remove_event_handler.Remove_Event_Handler),

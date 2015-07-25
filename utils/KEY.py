@@ -28,6 +28,7 @@ AVATAR = 'avatar'
 IDENTITY_ID = 'identity_id'
 TYPE = 'type'
 IS_VERIFY = 'is_verify'
+IID_LIST = 'iid_list'
 
 # event
 EVENT_ID = 'event_id'

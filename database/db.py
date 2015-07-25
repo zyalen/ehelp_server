@@ -1,15 +1,16 @@
 #!/usr/python
 
 import sys
+sys.path.append("..")
 import random
 import string
 import hashlib
 import MySQLdb
 import ast
 
-
 from dbhelper import dbhelper
-from  utils import KEY
+from utils import haversine
+from utils import KEY
 
   
 '''
@@ -869,3 +870,21 @@ def is_sign_in(user_id):
     result = False
   finally:
     return result
+
+'''
+get user's neighbors
+@param includes user_id, longitude, latitude
+'''
+def get_neighbor(data):
+  neighbor_uid_list = []
+  if KEY.LONGITUDE not in data or KEY.LATITUDE not in data:
+    return neighbor_uid_list
+  location_range = haversine.get_range(data[KEY.LONGITUDE], data[KEY.LATITUDE])
+  sql = "select identity_id from user where " \
+        "longitude > %f and longitude < %f " \
+        "and latitude > %f and latitude < %f"
+  sql_result = dbhelper.execute_fetchall(
+    sql%(location_range[0], location_range[1], location_range[2], location_range[3]))
+  for each_result in sql_result:
+    neighbor_uid_list.append(each_result[0])
+  return neighbor_uid_list
