@@ -27,6 +27,7 @@ from handler import user_relation_manage_handler
 from handler import sign_in_handler
 from handler import user_avatar_handler
 from handler import get_neighbor
+from handler import get_nearby_event_handler
 
 os.chdir(os.path.join(os.getcwd(), os.path.dirname(sys.argv[0])))
 
@@ -45,6 +46,7 @@ def main():
       (r"/event/modify", update_event_handler.Update_Event_Handler),
       (r"/event/remove", remove_event_handler.Remove_Event_Handler),
       (r"/event/query_launch", get_launch_events_handler.Get_Launch_Events_Handler),
+      (r"/event/get_nearby_event", get_nearby_event_handler.Get_Nearby_Event_handler),
       (r"/event/query_join", get_join_events_handler.Get_Join_Events_Handler),
       (r"/user/event_manage", user_event_manage_handler.User_Event_Manage_Handler),     
       (r"/comment/add", add_comment_handler.Add_Comment_Handler),

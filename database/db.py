@@ -879,7 +879,8 @@ def get_neighbor(data):
   neighbor_uid_list = []
   if KEY.LONGITUDE not in data or KEY.LATITUDE not in data:
     return neighbor_uid_list
-  location_range = haversine.get_range(data[KEY.LONGITUDE], data[KEY.LATITUDE])
+  DISTANCE = 0.5 # 500m
+  location_range = haversine.get_range(data[KEY.LONGITUDE], data[KEY.LATITUDE], DISTANCE)
   sql = "select identity_id from user where " \
         "longitude > %f and longitude < %f " \
         "and latitude > %f and latitude < %f"
@@ -892,5 +893,30 @@ def get_neighbor(data):
 
 '''
 get help_events happend around the user
-@param include user_id, longitude, latitudem, type
+@param include longitude, latitude
+ option params includes state indicates all events or those starting or ended.
+                 type indicates type of events.
+                 last_time indicates the last time client update
+@return a list of event
 '''
+def get_nearby_event(data):
+  nearby_event_list = []
+  if KEY.LONGITUDE not in data or KEY.LATITUDE not in data:
+    return nearby_event_list
+  DISTANCE = 0.5 # 500m
+  location_range = haversine.get_range(data[KEY.LONGITUDE], data[KEY.LATITUDE], DISTANCE)
+  sql = "select id from event where " \
+        "longitude > %f and longitude < %f " \
+        "and latitude > %f and latitude < %f"\
+        %(location_range[0], location_range[1], location_range[2], location_range[3])
+  if KEY.TYPE in data:
+    if data[KEY.TYPE] == 1 or data[KEY.TYPE] == 2:
+      sql += " and type = %d"%data[KEY.TYPE]
+  if KEY.LAST_TIME in data:
+    sql += " and last_time > %s"%data[KEY.LAST_TIME]
+  sql += " order by time DESC"
+  sql_result = dbhelper.execute_fetchall(sql)
+  for each_result in sql_result:
+    for each_id in each_result:
+      nearby_event_list.append(each_id)
+  return nearby_event_list
