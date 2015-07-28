@@ -19,6 +19,3 @@ class Get_Join_Events_Handler(RequestHandler):
     resp[KEY.STATUS] = STATUS.OK
     
     self.write(json_encode(resp))
-
-    
-

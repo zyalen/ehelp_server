@@ -38,12 +38,12 @@ TITLE = 'title'
 CONTENT = 'content'
 TYPE = 'type'
 TIME = 'time'
+LAST_TIME = 'last_time'
 STATE = 'state'
 FOLLOW_NUMBER = 'follow_number'
 SUPPORT_NUMBER = 'support_number'
 GROUP_PTS = 'group_pts'
 EVENT_LIST = 'event_list'
-LAST_TIME = 'last_time'
 
 # comment
 COMMENT_ID = 'comment_id'
