@@ -888,3 +888,9 @@ def get_neighbor(data):
   for each_result in sql_result:
     neighbor_uid_list.append(each_result[0])
   return neighbor_uid_list
+
+
+'''
+get help_events happend around the user
+@param include user_id, longitude, latitudem, type
+'''
