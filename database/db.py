@@ -873,14 +873,15 @@ def is_sign_in(user_id):
 
 '''
 get user's neighbors
-@param includes user_id, longitude, latitude
+@param includes user_id
 '''
 def get_neighbor(data):
   neighbor_uid_list = []
-  if KEY.LONGITUDE not in data or KEY.LATITUDE not in data:
+  if KEY.ID not in data:
     return neighbor_uid_list
+  user = get_user_information(data)
   DISTANCE = 0.5 # 500m
-  location_range = haversine.get_range(data[KEY.LONGITUDE], data[KEY.LATITUDE], DISTANCE)
+  location_range = haversine.get_range(user[KEY.LONGITUDE], user[KEY.LATITUDE], DISTANCE)
   sql = "select identity_id from user where " \
         "longitude > %f and longitude < %f " \
         "and latitude > %f and latitude < %f"
@@ -893,7 +894,7 @@ def get_neighbor(data):
 
 '''
 get help_events happend around the user
-@param include longitude, latitude
+@param include event id
  option params includes state indicates all events or those starting or ended.
                  type indicates type of events.
                  last_time indicates the last time client update
@@ -901,10 +902,11 @@ get help_events happend around the user
 '''
 def get_nearby_event(data):
   nearby_event_list = []
-  if KEY.LONGITUDE not in data or KEY.LATITUDE not in data:
+  if KEY.ID not in data:
     return nearby_event_list
+  user = get_user_information(data)
   DISTANCE = 0.5 # 500m
-  location_range = haversine.get_range(data[KEY.LONGITUDE], data[KEY.LATITUDE], DISTANCE)
+  location_range = haversine.get_range(user[KEY.LONGITUDE], user[KEY.LATITUDE], DISTANCE)
   sql = "select id from event where " \
         "longitude > %f and longitude < %f " \
         "and latitude > %f and latitude < %f"\
