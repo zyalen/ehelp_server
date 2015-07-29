@@ -266,7 +266,7 @@ launch a help event by launcher.
 @return event_id if successfully launches.
         -1 if fails.
 '''
-def add_event(data): 
+def add_event(data):
   if KEY.ID not in data or KEY.TYPE not in data or KEY.TITLE not in data:
     return -1
   sql = "insert into event (launcher, type, time) values (%d, %d, now())"
@@ -322,6 +322,22 @@ def update_event(data):
     sql = "update event set state = %d where id = %d"
     try:
       dbhelper.execute(sql%(data[KEY.STATE], data[KEY.EVENT_ID]))
+      result &= True
+    except:
+      result &= False
+
+  if KEY.DEMAND_NUMBER in data:
+    sql = "update event set demand_number = %d where id = %d"
+    try:
+      dbhelper.execute(sql%(data[KEY.DEMAND_NUMBER], data[KEY.EVENT_ID]))
+      result &= True
+    except:
+      result &= False
+
+  if KEY.LOVE_COIN in data:
+    sql = "update event set love_coin = %d where id = %d"
+    try:
+      dbhelper.execute(sql%(data[KEY.LOVE_COIN], data[KEY.EVENT_ID]))
       result &= True
     except:
       result &= False
@@ -820,7 +836,7 @@ create a loving bank account. It contains loving bank and credit.
 def create_loving_bank(data, init_coin=0, init_score=0):
   if KEY.ID not in data:
     return -1
-  sql = "insert into loving_bank (user_id, coin, score, ac_score) values (%d, %d, %d, %d)"
+  sql = "insert into loving_bank (userid, love_coin, score_rank, score_exchange) values (%d, %d, %d, %d)"
   try:
     bank_account_id = dbhelper.insert(sql%(data[KEY.ID], init_coin, init_score, init_score))
     return bank_account_id
@@ -920,3 +936,26 @@ def get_nearby_event(data):
     for each_id in each_result:
       nearby_event_list.append(each_id)
   return nearby_event_list
+
+
+'''
+get information about loving_bank
+@param user_id, user's id
+@return user's love coin and score
+'''
+def get_user_loving_bank(data):
+  if KEY.USER_ID in data:
+    return None
+  sql = "select * from loving_bank where user_id = %d"
+  try:
+    res = dbhelper.execute_fetchone(sql%(data[KEY.USER_ID]))
+    if res is None:
+      return None
+    else:
+      bank_info = {}
+      bank_info[KEY.ID] = res[1]
+      bank_info[KEY.SCORE] = res[2]
+      bank_info[KEY.LOVE_COIN] = res[4]
+      return bank_info
+  except:
+    return None
