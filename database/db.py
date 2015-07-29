@@ -223,16 +223,22 @@ def modify_password(data):
   
 '''
 get user's information, which includes user's name, nickname, gender ...... .
-@params include user's id.
+@params include user's id
+        option user's phone
 @return a json includes user's concrete information.
            None if params error or database query error.
 '''
 def get_user_information(data):
   if KEY.ID not in data:
-    return None
-  sql = "select * from user where id = %d"
+    if KEY.PHONE not in data:
+      return None
+    else:
+      sql = "select * from user where phone = %s"%(data[KEY.PHONE])
+      print sql
+  else:
+    sql = "select * from user where id = %d"%(data[KEY.ID])
   try:
-    res = dbhelper.execute_fetchone(sql%(data[KEY.ID]))
+    res = dbhelper.execute_fetchone(sql)
     if res is None:
       return None
     else:
