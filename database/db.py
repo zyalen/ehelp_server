@@ -944,18 +944,18 @@ get information about loving_bank
 @return user's love coin and score
 '''
 def get_user_loving_bank(data):
-  if KEY.USER_ID in data:
+  if KEY.USER_ID not in data:
     return None
-  sql = "select * from loving_bank where user_id = %d"
+  sql = "select score_rank, love_coin from loving_bank where userid = %d"
   try:
     res = dbhelper.execute_fetchone(sql%(data[KEY.USER_ID]))
     if res is None:
       return None
     else:
       bank_info = {}
-      bank_info[KEY.ID] = res[1]
-      bank_info[KEY.SCORE] = res[2]
-      bank_info[KEY.LOVE_COIN] = res[4]
+      bank_info[KEY.ID] = data[KEY.USER_ID]
+      bank_info[KEY.SCORE] = res[0]
+      bank_info[KEY.LOVE_COIN] = res[1]
       return bank_info
   except:
     return None
