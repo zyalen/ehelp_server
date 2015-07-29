@@ -144,6 +144,8 @@ CREATE TABLE `event` (
   `follow_number` int(11) NOT NULL DEFAULT '0',
   `support_number` int(11) NOT NULL DEFAULT '0',
   `group_pts` decimal(7,4) NOT NULL DEFAULT '0.0000',
+  `demand_number` int(11) NOT NULL DEFAULT '0',
+  `love_coin` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `launcher_idx` (`launcher`),
   CONSTRAINT `event_launcher_fk` FOREIGN KEY (`launcher`) REFERENCES `account` (`id`) ON DELETE CASCADE ON UPDATE CASCADE

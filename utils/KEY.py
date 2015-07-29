@@ -44,6 +44,8 @@ FOLLOW_NUMBER = 'follow_number'
 SUPPORT_NUMBER = 'support_number'
 GROUP_PTS = 'group_pts'
 EVENT_LIST = 'event_list'
+DEMAND_NUMBER = 'demand_number'
+
 
 # comment
 COMMENT_ID = 'comment_id'
@@ -59,4 +61,6 @@ HEALTH_LIST = 'health_list'
 ILLNESS_ID = 'illness_id'
 ILLNESS_LIST = 'illness_list'
 
-
+# loving_bank
+LOVE_COIN = 'love_coin'
+SCORE = 'score'

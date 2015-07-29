@@ -28,6 +28,8 @@ from handler import sign_in_handler
 from handler import user_avatar_handler
 from handler import get_neighbor
 from handler import get_nearby_event_handler
+from handler import evaluate_handler
+from handler import loving_bank_handler
 
 os.chdir(os.path.join(os.getcwd(), os.path.dirname(sys.argv[0])))
 
@@ -57,8 +59,9 @@ def main():
       (r"/health/query", get_health_records_handler.Get_Health_Records_Handler),
       (r"/illness/upload", add_illness_handler.Add_Illness_Handler),
       (r"/illness/query", get_illness_records_handler.Get_Illness_Records_Handler),
-      (r"/user/evaluate", user_relation_manage_handler.User_Relation_Manage_Handler),
+      (r"/user/evaluate", evaluate_handler.Evaluate_Handler),
       (r"/account/signin", sign_in_handler.Sign_In_Handler),
+      (r"/user/lovingbank", loving_bank_handler.Get_Loving_Bank_Information_Handler),
       (r"/(.*)", tornado.web.StaticFileHandler, {"path": "static"}),
     ], debug=True)
   http_server = tornado.httpserver.HTTPServer(application)
