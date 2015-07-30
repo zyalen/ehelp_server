@@ -271,10 +271,17 @@ launch a help event by launcher.
        other option params includes content of event, longitude and latitude of event.
 @return event_id if successfully launches.
         -1 if fails.
+        -2 if lack love_coin
 '''
 def add_event(data):
   if KEY.ID not in data or KEY.TYPE not in data or KEY.TITLE not in data:
     return -1
+  if KEY.LOVE_COIN in data:
+    user = {}
+    user[KEY.USER_ID] = data[KEY.ID]
+    bank_info = get_user_loving_bank(user)
+    if bank_info[KEY.KEY.LOVE_COIN] - data[KEY.LOVE_COIN] < 0:
+      return -2
   sql = "insert into event (launcher, type, time) values (%d, %d, now())"
   event_id = -1
   try:
@@ -902,6 +909,8 @@ def get_neighbor(data):
   if KEY.ID not in data:
     return neighbor_uid_list
   user = get_user_information(data)
+  if user is None:
+    return neighbor_uid_list
   DISTANCE = 0.5 # 500m
   location_range = haversine.get_range(user[KEY.LONGITUDE], user[KEY.LATITUDE], DISTANCE)
   sql = "select identity_id from user where " \
