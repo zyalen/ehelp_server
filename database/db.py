@@ -942,8 +942,7 @@ def get_nearby_event(data):
         "and latitude > %f and latitude < %f"\
         %(location_range[0], location_range[1], location_range[2], location_range[3])
   if KEY.TYPE in data:
-    if data[KEY.TYPE] == 1 or data[KEY.TYPE] == 2:
-      sql += " and type = %d"%data[KEY.TYPE]
+    sql += " and type = %d"%data[KEY.TYPE]
   if KEY.LAST_TIME in data:
     sql += " and last_time > '%s'"%data[KEY.LAST_TIME]
   sql += " order by time DESC"
