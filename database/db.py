@@ -976,3 +976,88 @@ def get_user_loving_bank(data):
       return bank_info
   except:
     return None
+
+
+'''
+add an answer to a question
+@param  data contains author_id, event_id, content
+@return answer_id if successfully adds
+    -1 is fails.
+'''
+def add_answer(data):
+  if KEY.AUTHOR_ID not in data or KEY.EVENT_ID not in data or KEY.CONTENT not in data:
+    return -1
+  sql = "insert into answer (event_id, author_id) values (%d, %d)"
+  answer_id = -1
+  try:
+    answer_id = dbhelper.insert(sql%(data[KEY.EVENT_ID], data[KEY.AUTHOR_ID]))
+    if answer_id > 0:
+      data[KEY.ANSWER_ID] = answer_id
+      update_answer(data)
+    return answer_id
+  except:
+    return -1
+
+
+'''
+update information about an answer
+@param
+@return
+'''
+def update_answer(data):
+  result = True
+  sql = ""
+  if KEY.CONTENT in data:
+    data[KEY.CONTENT] = MySQLdb.escape_string(data[KEY.CONTENT].encode("utf8"))
+    sql = "update answer set content = '%s' where id = %d"
+    try:
+      dbhelper.execute(sql%(data[KEY.CONTENT], data[KEY.ANSWER_ID]))
+      result &= True
+    except:
+      result &= False
+  if KEY.IS_ADOPTED in data:
+    sql = "update answer set is_adopted = %d where id = %d"
+    try:
+      dbhelper.execute(sql%(data[KEY.IS_ADOPTED], data[KEY.ANSWER_ID]))
+      result &= True
+    except:
+      result &= False
+  if KEY.LIKING_NUM in data:
+    sql = "update answer set liking_num = %d where id = %d"
+    try:
+      dbhelper.execute(sql%(data[KEY.LIKING_NUM], data[KEY.ANSWER_ID]))
+      result &= True
+    except:
+      result &= False
+
+  return result
+'''
+get information about an answer
+@param data contains answer_id
+@return concrete information about answer
+    which contains id, event_id, author_id, content, time, is_adopted, liking_num.
+'''
+def get_answer_info(data):
+  if KEY.ANSWER_ID not in data:
+    return None
+  answer_info = None
+  sql = "select * from answer where id = %d"
+  try:
+    sql_result = dbhelper.execute_fetchone(sql%(data[KEY.ANSWER_ID]))
+    if sql_result is not None:
+      answer_info = {}
+      answer_info[KEY.ID] = sql_result[0]
+      answer_info[KEY.EVENT_ID] = sql_result[1]
+      answer_info[KEY.AUTHOR_ID] = sql_result[2]
+      answer_info[KEY.CONTENT] = sql_result[3]
+      answer_info[KEY.TIME] = str(sql_result[4])
+      answer_info[KEY.IS_ADOPTED] = sql_result[5]
+      answer_info[KEY.LIKING_NUM] = sql_result[6]
+  except:
+    pass
+  finally:
+    return answer_info
+
+
+'''
+'''
