@@ -1037,4 +1037,23 @@ get information about an answer
 @return concrete information about answer
     which contains id, event_id, author_id, content, time, is_adopted, liking_num.
 '''
-# def get_answer_info:
+def get_answer_info(data):
+  if KEY.ANSWER_ID not in data:
+    return None
+  answer_info = None
+  sql = "select * from answer where id = %d"
+  try:
+    sql_result = dbhelper.execute_fetchone(sql%(data[KEY.ANSWER_ID]))
+    if sql_result is not None:
+      answer_info = {}
+      answer_info[KEY.ID] = sql_result[0]
+      answer_info[KEY.EVENT_ID] = sql_result[1]
+      answer_info[KEY.AUTHOR_ID] = sql_result[2]
+      answer_info[KEY.CONTENT] = sql_result[3]
+      answer_info[KEY.TIME] = sql_result[4]
+      answer_info[KEY.IS_ADOPTED] = sql_result[5]
+      answer_info[KEY.LIKING_NUM] = sql_result[6]
+  except:
+    pass
+  finally:
+    return answer_info
