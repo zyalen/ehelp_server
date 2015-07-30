@@ -27,3 +27,14 @@ class Add_Answer_Handler(RequestHandler):
       resp[KEY.STATUS] = STATUS.ERROR
 
     self.write(json_encode(resp))
+
+
+class Get_Answerlist_Handler(RequestHandler):
+  def post(self):
+    params = utils.decode_params(self.request)
+
+    resp = {}
+    resp[KEY.ANSWER_LIST] = db.get_answers(params, db.get_answer_id_list)
+    resp[KEY.STATUS] = STATUS.OK
+
+    self.write(json_encode(resp))

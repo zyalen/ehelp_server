@@ -29,10 +29,10 @@ def add_account(data):
   md5_encode.update(data[KEY.PASSWORD]+salt)
   password = md5_encode.hexdigest()
   sql_account = "insert into account (account, password, salt) values ('%s', '%s', '%s')"
-  sql_user = "insert into user (id, nickname) values (%d, '%s')"
+  sql_user = "insert into user (id, nickname, phone) values (%d, '%s', '%s')"
   try:
     insert_id = dbhelper.insert(sql_account%(data[KEY.ACCOUNT], password, salt))
-    dbhelper.insert(sql_user%(insert_id, data[KEY.ACCOUNT]))
+    dbhelper.insert(sql_user%(insert_id, data[KEY.ACCOUNT], data[KEY.ACCOUNT]))
     return insert_id
   except:
     return -1
@@ -234,7 +234,6 @@ def get_user_information(data):
       return None
     else:
       sql = "select * from user where phone = %s"%(data[KEY.PHONE])
-      print sql
   else:
     sql = "select * from user where id = %d"%(data[KEY.ID])
   try:
@@ -280,7 +279,7 @@ def add_event(data):
     user = {}
     user[KEY.USER_ID] = data[KEY.ID]
     bank_info = get_user_loving_bank(user)
-    if bank_info[KEY.KEY.LOVE_COIN] - data[KEY.LOVE_COIN] < 0:
+    if bank_info[KEY.LOVE_COIN] - data[KEY.LOVE_COIN] < 0:
       return -2
   sql = "insert into event (launcher, type, time) values (%d, %d, now())"
   event_id = -1
@@ -1060,4 +1059,35 @@ def get_answer_info(data):
 
 
 '''
+get a list of answer of the question
+@param include event's id
+@return a array of answers. each element is information of an answer
 '''
+def get_answers(data, get_answerid_list):
+  answer_id_list = get_answerid_list(data)
+  answer_list = []
+  answer_info = {}
+  for answer_id in answer_id_list:
+    answer_info[KEY.ANSWER_ID] = answer_id
+    answer_info = get_answer_info(answer_info)
+    if answer_info is not None:
+      answer_list.append(answer_info)
+  return answer_list
+
+
+'''
+get the id list of a question
+@param include event's id
+@return a list of answer_id about the question
+'''
+def get_answer_id_list(data):
+  answer_id_list = []
+  if KEY.EVENT_ID not in data:
+    return answer_id_list
+  sql = "select id from answer where event_id = %d"%data[KEY.EVENT_ID]
+  sql_result = dbhelper.execute_fetchall(sql)
+  for each_result in sql_result:
+    for each_id in each_result:
+      answer_id_list.append(each_id)
+
+  return answer_id_list
