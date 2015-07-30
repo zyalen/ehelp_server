@@ -19,7 +19,7 @@ class Add_Event_Handler(RequestHandler):
     if event_id > 0:
       event_info = {}
       event_info[KEY.EVENT_ID] = event_id
-      resp = db.get_event_information(event_info)
+      resp[KEY.VALUE] = db.get_event_information(event_info)
       if resp is None:
         resp = {}      
       resp[KEY.STATUS] = STATUS.OK

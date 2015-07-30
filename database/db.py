@@ -273,6 +273,7 @@ launch a help event by launcher.
         -2 if lack love_coin
 '''
 def add_event(data):
+  print data
   if KEY.ID not in data or KEY.TYPE not in data or KEY.TITLE not in data:
     return -1
   if KEY.LOVE_COIN in data:
@@ -285,6 +286,7 @@ def add_event(data):
   event_id = -1
   try:
     event_id = dbhelper.insert(sql%(data[KEY.ID], data[KEY.TYPE]))
+    print event_id
     if event_id > 0:
       data[KEY.EVENT_ID] = event_id
       update_event(data)
@@ -354,6 +356,14 @@ def update_event(data):
     except:
       result &= False
 
+  if KEY.COMMENT in data:
+    sql = "update event set comment = '%s' where id = %d"
+    try:
+      dbhelper.execute(sql%(data[KEY.COMMENT], data[KEY.EVENT_ID]))
+      result &= True
+    except:
+      result &= False
+
   return result
 
 
@@ -404,6 +414,9 @@ def get_event_information(data):
       event_info[KEY.FOLLOW_NUMBER] = sql_result[10]
       event_info[KEY.SUPPORT_NUMBER] = sql_result[11]
       event_info[KEY.GROUP_PTS] = float(sql_result[12])
+      event_info[KEY.DEMAND_NUMBER] = sql_result[13]
+      event_info[KEY.LOVE_COIN] = sql_result[14]
+      event_info[KEY.COMMENT] = str(sql_result[15])
       user = {}
       user[KEY.ID] = event_info[KEY.LAUNCHER_ID]
       user = get_user_information(user)

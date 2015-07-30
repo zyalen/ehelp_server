@@ -25,5 +25,3 @@ class Update_Event_Handler(RequestHandler):
     
     self.write(json_encode(resp))
 
-    
-

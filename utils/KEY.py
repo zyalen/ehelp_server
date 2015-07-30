@@ -46,6 +46,7 @@ SUPPORT_NUMBER = 'support_number'
 GROUP_PTS = 'group_pts'
 EVENT_LIST = 'event_list'
 DEMAND_NUMBER = 'demand_number'
+COMMENT = 'comment'
 
 
 # comment
