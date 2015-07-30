@@ -1050,7 +1050,7 @@ def get_answer_info(data):
       answer_info[KEY.EVENT_ID] = sql_result[1]
       answer_info[KEY.AUTHOR_ID] = sql_result[2]
       answer_info[KEY.CONTENT] = sql_result[3]
-      answer_info[KEY.TIME] = sql_result[4]
+      answer_info[KEY.TIME] = str(sql_result[4])
       answer_info[KEY.IS_ADOPTED] = sql_result[5]
       answer_info[KEY.LIKING_NUM] = sql_result[6]
   except:
