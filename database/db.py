@@ -945,7 +945,7 @@ def get_nearby_event(data):
     if data[KEY.TYPE] == 1 or data[KEY.TYPE] == 2:
       sql += " and type = %d"%data[KEY.TYPE]
   if KEY.LAST_TIME in data:
-    sql += " and last_time > %s"%data[KEY.LAST_TIME]
+    sql += " and last_time > '%s'"%data[KEY.LAST_TIME]
   sql += " order by time DESC"
   sql_result = dbhelper.execute_fetchall(sql)
   for each_result in sql_result:
