@@ -29,10 +29,10 @@ def add_account(data):
   md5_encode.update(data[KEY.PASSWORD]+salt)
   password = md5_encode.hexdigest()
   sql_account = "insert into account (account, password, salt) values ('%s', '%s', '%s')"
-  sql_user = "insert into user (id, nickname) values (%d, '%s')"
+  sql_user = "insert into user (id, nickname, phone) values (%d, '%s', '%s')"
   try:
     insert_id = dbhelper.insert(sql_account%(data[KEY.ACCOUNT], password, salt))
-    dbhelper.insert(sql_user%(insert_id, data[KEY.ACCOUNT]))
+    dbhelper.insert(sql_user%(insert_id, data[KEY.ACCOUNT], data[KEY.ACCOUNT]))
     return insert_id
   except:
     return -1
@@ -234,7 +234,6 @@ def get_user_information(data):
       return None
     else:
       sql = "select * from user where phone = %s"%(data[KEY.PHONE])
-      print sql
   else:
     sql = "select * from user where id = %d"%(data[KEY.ID])
   try:
@@ -280,7 +279,7 @@ def add_event(data):
     user = {}
     user[KEY.USER_ID] = data[KEY.ID]
     bank_info = get_user_loving_bank(user)
-    if bank_info[KEY.KEY.LOVE_COIN] - data[KEY.LOVE_COIN] < 0:
+    if bank_info[KEY.LOVE_COIN] - data[KEY.LOVE_COIN] < 0:
       return -2
   sql = "insert into event (launcher, type, time) values (%d, %d, now())"
   event_id = -1
@@ -536,9 +535,9 @@ def add_comment(data):
     return -1
   if KEY.CONTENT not in data:
     return -1
-  sql = "insert into comment (event_id, author, content, group_pts, time) values (%d, %d, '%s', %d, now())"
+  sql = "insert into comment (event_id, author, content, time) values (%d, %d, '%s', now())"
   try:
-    comment_id = dbhelper.insert(sql%(data[KEY.EVENT_ID], data[KEY.ID], data[KEY.CONTENT]), data[KEY.GROUP_PTS])
+    comment_id = dbhelper.insert(sql%(data[KEY.EVENT_ID], data[KEY.ID], data[KEY.CONTENT]))
     return comment_id
   except:
     return -1
@@ -942,10 +941,9 @@ def get_nearby_event(data):
         "and latitude > %f and latitude < %f"\
         %(location_range[0], location_range[1], location_range[2], location_range[3])
   if KEY.TYPE in data:
-    if data[KEY.TYPE] == 1 or data[KEY.TYPE] == 2:
-      sql += " and type = %d"%data[KEY.TYPE]
+    sql += " and type = %d"%data[KEY.TYPE]
   if KEY.LAST_TIME in data:
-    sql += " and last_time > %s"%data[KEY.LAST_TIME]
+    sql += " and last_time > '%s'"%data[KEY.LAST_TIME]
   sql += " order by time DESC"
   sql_result = dbhelper.execute_fetchall(sql)
   for each_result in sql_result:
@@ -976,6 +974,121 @@ def get_user_loving_bank(data):
   except:
     return None
 
+
+'''
+add an answer to a question
+@param  data contains author_id, event_id, content
+@return answer_id if successfully adds
+    -1 is fails.
+'''
+def add_answer(data):
+  if KEY.AUTHOR_ID not in data or KEY.EVENT_ID not in data or KEY.CONTENT not in data:
+    return -1
+  sql = "insert into answer (event_id, author_id) values (%d, %d)"
+  answer_id = -1
+  try:
+    answer_id = dbhelper.insert(sql%(data[KEY.EVENT_ID], data[KEY.AUTHOR_ID]))
+    if answer_id > 0:
+      data[KEY.ANSWER_ID] = answer_id
+      update_answer(data)
+    return answer_id
+  except:
+    return -1
+
+
+'''
+update information about an answer
+@param
+@return
+'''
+def update_answer(data):
+  result = True
+  sql = ""
+  if KEY.CONTENT in data:
+    data[KEY.CONTENT] = MySQLdb.escape_string(data[KEY.CONTENT].encode("utf8"))
+    sql = "update answer set content = '%s' where id = %d"
+    try:
+      dbhelper.execute(sql%(data[KEY.CONTENT], data[KEY.ANSWER_ID]))
+      result &= True
+    except:
+      result &= False
+  if KEY.IS_ADOPTED in data:
+    sql = "update answer set is_adopted = %d where id = %d"
+    try:
+      dbhelper.execute(sql%(data[KEY.IS_ADOPTED], data[KEY.ANSWER_ID]))
+      result &= True
+    except:
+      result &= False
+  if KEY.LIKING_NUM in data:
+    sql = "update answer set liking_num = %d where id = %d"
+    try:
+      dbhelper.execute(sql%(data[KEY.LIKING_NUM], data[KEY.ANSWER_ID]))
+      result &= True
+    except:
+      result &= False
+
+  return result
+'''
+get information about an answer
+@param data contains answer_id
+@return concrete information about answer
+    which contains id, event_id, author_id, content, time, is_adopted, liking_num.
+'''
+def get_answer_info(data):
+  if KEY.ANSWER_ID not in data:
+    return None
+  answer_info = None
+  sql = "select * from answer where id = %d"
+  try:
+    sql_result = dbhelper.execute_fetchone(sql%(data[KEY.ANSWER_ID]))
+    if sql_result is not None:
+      answer_info = {}
+      answer_info[KEY.ID] = sql_result[0]
+      answer_info[KEY.EVENT_ID] = sql_result[1]
+      answer_info[KEY.AUTHOR_ID] = sql_result[2]
+      answer_info[KEY.CONTENT] = sql_result[3]
+      answer_info[KEY.TIME] = str(sql_result[4])
+      answer_info[KEY.IS_ADOPTED] = sql_result[5]
+      answer_info[KEY.LIKING_NUM] = sql_result[6]
+  except:
+    pass
+  finally:
+    return answer_info
+
+
+'''
+get a list of answer of the question
+@param include event's id
+@return a array of answers. each element is information of an answer
+'''
+def get_answers(data, get_answerid_list):
+  answer_id_list = get_answerid_list(data)
+  answer_list = []
+  answer_info = {}
+  for answer_id in answer_id_list:
+    answer_info[KEY.ANSWER_ID] = answer_id
+    answer_info = get_answer_info(answer_info)
+    if answer_info is not None:
+      answer_list.append(answer_info)
+  return answer_list
+
+
+'''
+get the id list of a question
+@param include event's id
+@return a list of answer_id about the question
+'''
+def get_answer_id_list(data):
+  answer_id_list = []
+  if KEY.EVENT_ID not in data:
+    return answer_id_list
+  sql = "select id from answer where event_id = %d"%data[KEY.EVENT_ID]
+  sql_result = dbhelper.execute_fetchall(sql)
+  for each_result in sql_result:
+    for each_id in each_result:
+      answer_id_list.append(each_id)
+
+  return answer_id_list
 
 '''
 query all the static relations. The relation is single direction.

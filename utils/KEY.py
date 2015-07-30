@@ -65,3 +65,9 @@ ILLNESS_LIST = 'illness_list'
 # loving_bank
 LOVE_COIN = 'love_coin'
 SCORE = 'score'
+
+# answer
+ANSWER_ID = 'answer_id'
+IS_ADOPTED = 'is_adopted'
+LIKING_NUM = 'liking_num'
+ANSWER_LIST = 'answer_list'
