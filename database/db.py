@@ -454,7 +454,7 @@ def get_launch_event_list(data):
       sql += " and type = %d"%data[KEY.TYPE]
   if KEY.LAST_TIME in data:
     sql += " and last_time > \"" + data[KEY.LAST_TIME] + "\""
-  # sql += " order by time DESC"
+  sql += " order by last_time DESC"
   sql_result = dbhelper.execute_fetchall(sql)
   for each_result in sql_result:
     for each_id in each_result:
@@ -536,9 +536,9 @@ def add_comment(data):
     return -1
   if KEY.CONTENT not in data:
     return -1
-  sql = "insert into comment (event_id, author, content, time) values (%d, %d, '%s', now())"
+  sql = "insert into comment (event_id, author, content, group_pts, time) values (%d, %d, '%s', %d, now())"
   try:
-    comment_id = dbhelper.insert(sql%(data[KEY.EVENT_ID], data[KEY.ID], data[KEY.CONTENT]))
+    comment_id = dbhelper.insert(sql%(data[KEY.EVENT_ID], data[KEY.ID], data[KEY.CONTENT]), data[KEY.GROUP_PTS])
     return comment_id
   except:
     return -1
@@ -922,7 +922,6 @@ def get_neighbor(data):
     neighbor_uid_list.append(each_result[0])
   return neighbor_uid_list
 
-
 '''
 get help_events happend around the user
 @param include event id
@@ -976,3 +975,27 @@ def get_user_loving_bank(data):
       return bank_info
   except:
     return None
+
+
+'''
+query all the static relations. The relation is single direction.
+@params includes user's id.
+parameter type indicates type of static relation. two users in one direction could only have one type of relation.
+                 type:  0 indicates family relation.
+                        1 indicates geography relation.
+                        2 indicates career, interest and general friend relation.
+@return a list contains ids
+'''
+def query_static_relation(data):
+  id_list = []
+  if KEY.ID not in data:
+    return id_list
+  sql = "select user_b from static_relation where user_a = %d"%data[KEY.ID]
+  sql_result = dbhelper.execute_fetchall(sql)
+  resp = {}
+  for each_result in sql_result:
+    for each_id in each_result:
+      resp[KEY.ID] = each_id
+      resp = get_user_information(resp)
+      id_list.append(resp)
+  return id_list
