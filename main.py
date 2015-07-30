@@ -64,6 +64,7 @@ def main():
       (r"/account/signin", sign_in_handler.Sign_In_Handler),
       (r"/user/lovingbank", loving_bank_handler.Get_Loving_Bank_Information_Handler),
       (r"/event/add_ans", manage_answer_handler.Add_Answer_Handler),
+      (r"/event/anslist", manage_answer_handler.Get_Answerlist_Handler),
       (r"/(.*)", tornado.web.StaticFileHandler, {"path": "static"}),
     ], debug=True)
   http_server = tornado.httpserver.HTTPServer(application)
