@@ -25,6 +25,11 @@ class Add_Event_Handler(RequestHandler):
       resp[KEY.STATUS] = STATUS.OK
     else:
       resp[KEY.STATUS] = STATUS.ERROR
+      if event_id == -1:
+        resp[KEY.VALUE] = -1
+      if event_id == -2:
+        resp[KEY.VALUE] = -2
+
     
     self.write(json_encode(resp))
 
