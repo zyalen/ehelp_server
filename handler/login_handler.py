@@ -21,6 +21,7 @@ class Login_Handler(RequestHandler):
         resp[KEY.STATUS] = STATUS.ERROR
       else:
         resp[KEY.ACCOUNT] = params[KEY.ACCOUNT]
+        resp[KEY.STATUS] = STATUS.OK
         resp[KEY.SALT] = salt
     
     else:

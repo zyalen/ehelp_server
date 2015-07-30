@@ -133,15 +133,19 @@ DROP TABLE IF EXISTS `event`;
 CREATE TABLE `event` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `launcher` int(11) NOT NULL,
+  `title` varchar(200) DEFAULT NULL,
   `content` varchar(500) DEFAULT NULL,
   `type` int(11) NOT NULL DEFAULT '0',
   `time` datetime DEFAULT NULL,
+  `last_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `longitude` decimal(10,7) DEFAULT '999.9999999',
   `latitude` decimal(10,7) DEFAULT '999.9999999',
   `state` int(11) NOT NULL DEFAULT '0',
   `follow_number` int(11) NOT NULL DEFAULT '0',
   `support_number` int(11) NOT NULL DEFAULT '0',
   `group_pts` decimal(7,4) NOT NULL DEFAULT '0.0000',
+  `demand_number` int(11) NOT NULL DEFAULT '0',
+  `love_coin` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `launcher_idx` (`launcher`),
   CONSTRAINT `event_launcher_fk` FOREIGN KEY (`launcher`) REFERENCES `account` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -274,6 +278,31 @@ CREATE TABLE `user` (
   UNIQUE KEY `nickname` (`nickname`),
   CONSTRAINT `user_id_fk` FOREIGN KEY (`id`) REFERENCES `account` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+--
+-- Table structure for table `answer`
+--
+
+DROP TABLE IF EXISTS `answer`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `answer` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `event_id` INT(11) NOT NULL,
+  `author_id` INT(11) NOT NULL,
+  `content` varchar(500) DEFAULT NULL,
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `is_adopted` TINYINT(1) DEFAULT 0,
+  `liking_num` INT(11) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `event_idx` (`event_id`),
+  CONSTRAINT `event_id_fx` FOREIGN KEY (`event_id`) REFERENCES `event` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `author_id_fx` FOREIGN KEY (`author_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET = utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

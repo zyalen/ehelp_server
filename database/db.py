@@ -1,16 +1,16 @@
 #!/usr/python
 
 import sys
+sys.path.append("..")
 import random
 import string
 import hashlib
 import MySQLdb
 import ast
 
-
 from dbhelper import dbhelper
-from  utils import KEY
-
+from utils import haversine
+from utils import KEY
 
   
 '''
@@ -266,8 +266,8 @@ launch a help event by launcher.
 @return event_id if successfully launches.
         -1 if fails.
 '''
-def add_event(data): 
-  if KEY.ID not in data or KEY.TYPE not in data:
+def add_event(data):
+  if KEY.ID not in data or KEY.TYPE not in data or KEY.TITLE not in data:
     return -1
   sql = "insert into event (launcher, type, time) values (%d, %d, now())"
   event_id = -1
@@ -284,13 +284,21 @@ def add_event(data):
 '''
 modify information of a help event.
 @params  includes event_id, which is id of the event to be modified.
-         option params includes: content of event, longitude and latitude of event, state of event.
+         option params includes: title of event, content of event, longitude and latitude of event, state of event.
 @return True if successfully modifies.
         False otherwise.
 '''
 def update_event(data):
   result = True
   sql = ""
+  if KEY.TITLE in data:
+    data[KEY.TITLE] = MySQLdb.escape_string(data[KEY.TITLE].encode("utf8"))
+    sql = "update event set title = '%s' where id = %d"
+    try:
+      dbhelper.execute(sql%(data[KEY.TITLE], data[KEY.EVENT_ID]))
+      result &= True
+    except:
+      result &= False
   if KEY.CONTENT in data:
     data[KEY.CONTENT] = MySQLdb.escape_string(data[KEY.CONTENT].encode("utf8"))
     sql = "update event set content = '%s' where id = %d"
@@ -314,6 +322,22 @@ def update_event(data):
     sql = "update event set state = %d where id = %d"
     try:
       dbhelper.execute(sql%(data[KEY.STATE], data[KEY.EVENT_ID]))
+      result &= True
+    except:
+      result &= False
+
+  if KEY.DEMAND_NUMBER in data:
+    sql = "update event set demand_number = %d where id = %d"
+    try:
+      dbhelper.execute(sql%(data[KEY.DEMAND_NUMBER], data[KEY.EVENT_ID]))
+      result &= True
+    except:
+      result &= False
+
+  if KEY.LOVE_COIN in data:
+    sql = "update event set love_coin = %d where id = %d"
+    try:
+      dbhelper.execute(sql%(data[KEY.LOVE_COIN], data[KEY.EVENT_ID]))
       result &= True
     except:
       result &= False
@@ -357,15 +381,17 @@ def get_event_information(data):
       event_info = {}
       event_info[KEY.EVENT_ID] = sql_result[0]
       event_info[KEY.LAUNCHER_ID] = sql_result[1]
-      event_info[KEY.CONTENT] = sql_result[2]
-      event_info[KEY.TYPE] = sql_result[3]
-      event_info[KEY.TIME] = str(sql_result[4])
-      event_info[KEY.LONGITUDE] = float(sql_result[5])
-      event_info[KEY.LATITUDE] = float(sql_result[6])
-      event_info[KEY.STATE] = sql_result[7]
-      event_info[KEY.FOLLOW_NUMBER] = sql_result[8]
-      event_info[KEY.SUPPORT_NUMBER] = sql_result[9]
-      event_info[KEY.GROUP_PTS] = float(sql_result[10])
+      event_info[KEY.TITLE] = sql_result[2]
+      event_info[KEY.CONTENT] = sql_result[3]
+      event_info[KEY.TYPE] = sql_result[4]
+      event_info[KEY.TIME] = str(sql_result[5])
+      event_info[KEY.LAST_TIME] = str(sql_result[6])
+      event_info[KEY.LONGITUDE] = float(sql_result[7])
+      event_info[KEY.LATITUDE] = float(sql_result[8])
+      event_info[KEY.STATE] = sql_result[9]
+      event_info[KEY.FOLLOW_NUMBER] = sql_result[10]
+      event_info[KEY.SUPPORT_NUMBER] = sql_result[11]
+      event_info[KEY.GROUP_PTS] = float(sql_result[12])
       user = {}
       user[KEY.ID] = event_info[KEY.LAUNCHER_ID]
       user = get_user_information(user)
@@ -394,12 +420,12 @@ def get_events(data, get_event_id_list):
       event_list.append(event_info)
   return event_list
 
-
 '''
 get events that launch by user.
 @params includes user's id, 
                  option params includes state indicates all events or those starting or ended.
                  type indicates type of events.
+                 last_time indicates the last time client update
 @return an array of result event ids.
 '''
 def get_launch_event_list(data):
@@ -413,7 +439,9 @@ def get_launch_event_list(data):
   if KEY.TYPE in data:
     if data[KEY.TYPE] >= 0 and data[KEY.TYPE] <= 2:
       sql += " and type = %d"%data[KEY.TYPE]
-  sql += " order by time DESC"
+  if KEY.LAST_TIME in data:
+    sql += " and last_time > \"" + data[KEY.LAST_TIME] + "\""
+  # sql += " order by time DESC"
   sql_result = dbhelper.execute_fetchall(sql)
   for each_result in sql_result:
     for each_id in each_result:
@@ -808,7 +836,7 @@ create a loving bank account. It contains loving bank and credit.
 def create_loving_bank(data, init_coin=0, init_score=0):
   if KEY.ID not in data:
     return -1
-  sql = "insert into loving_bank (user_id, coin, score, ac_score) values (%d, %d, %d, %d)"
+  sql = "insert into loving_bank (userid, love_coin, score_rank, score_exchange) values (%d, %d, %d, %d)"
   try:
     bank_account_id = dbhelper.insert(sql%(data[KEY.ID], init_coin, init_score, init_score))
     return bank_account_id
@@ -825,6 +853,7 @@ user could sign in once a day. Especially, if user has signed in today, this met
 def sign_in(data):
   if KEY.ID not in data:
     return False
+  user_id = data[KEY.ID]
   if is_sign_in(user_id):
     return False
   sql = "insert into sign_in (user_id, time) values (%d, now())"
@@ -858,4 +887,75 @@ def is_sign_in(user_id):
   finally:
     return result
 
+'''
+get user's neighbors
+@param includes user_id, longitude, latitude
+'''
+def get_neighbor(data):
+  neighbor_uid_list = []
+  if KEY.LONGITUDE not in data or KEY.LATITUDE not in data:
+    return neighbor_uid_list
+  DISTANCE = 0.5 # 500m
+  location_range = haversine.get_range(data[KEY.LONGITUDE], data[KEY.LATITUDE], DISTANCE)
+  sql = "select identity_id from user where " \
+        "longitude > %f and longitude < %f " \
+        "and latitude > %f and latitude < %f"
+  sql_result = dbhelper.execute_fetchall(
+    sql%(location_range[0], location_range[1], location_range[2], location_range[3]))
+  for each_result in sql_result:
+    neighbor_uid_list.append(each_result[0])
+  return neighbor_uid_list
 
+
+'''
+get help_events happend around the user
+@param include longitude, latitude
+ option params includes state indicates all events or those starting or ended.
+                 type indicates type of events.
+                 last_time indicates the last time client update
+@return a list of event
+'''
+def get_nearby_event(data):
+  nearby_event_list = []
+  if KEY.LONGITUDE not in data or KEY.LATITUDE not in data:
+    return nearby_event_list
+  DISTANCE = 0.5 # 500m
+  location_range = haversine.get_range(data[KEY.LONGITUDE], data[KEY.LATITUDE], DISTANCE)
+  sql = "select id from event where " \
+        "longitude > %f and longitude < %f " \
+        "and latitude > %f and latitude < %f"\
+        %(location_range[0], location_range[1], location_range[2], location_range[3])
+  if KEY.TYPE in data:
+    if data[KEY.TYPE] == 1 or data[KEY.TYPE] == 2:
+      sql += " and type = %d"%data[KEY.TYPE]
+  if KEY.LAST_TIME in data:
+    sql += " and last_time > %s"%data[KEY.LAST_TIME]
+  sql += " order by time DESC"
+  sql_result = dbhelper.execute_fetchall(sql)
+  for each_result in sql_result:
+    for each_id in each_result:
+      nearby_event_list.append(each_id)
+  return nearby_event_list
+
+
+'''
+get information about loving_bank
+@param user_id, user's id
+@return user's love coin and score
+'''
+def get_user_loving_bank(data):
+  if KEY.USER_ID not in data:
+    return None
+  sql = "select score_rank, love_coin from loving_bank where userid = %d"
+  try:
+    res = dbhelper.execute_fetchone(sql%(data[KEY.USER_ID]))
+    if res is None:
+      return None
+    else:
+      bank_info = {}
+      bank_info[KEY.ID] = data[KEY.USER_ID]
+      bank_info[KEY.SCORE] = res[0]
+      bank_info[KEY.LOVE_COIN] = res[1]
+      return bank_info
+  except:
+    return None

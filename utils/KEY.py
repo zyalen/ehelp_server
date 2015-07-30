@@ -28,19 +28,24 @@ AVATAR = 'avatar'
 IDENTITY_ID = 'identity_id'
 TYPE = 'type'
 IS_VERIFY = 'is_verify'
+IID_LIST = 'iid_list'
 
 # event
 EVENT_ID = 'event_id'
 LAUNCHER_ID = 'launcher_id'
 LAUNCHER = 'launcher'
+TITLE = 'title'
 CONTENT = 'content'
 TYPE = 'type'
 TIME = 'time'
+LAST_TIME = 'last_time'
 STATE = 'state'
 FOLLOW_NUMBER = 'follow_number'
 SUPPORT_NUMBER = 'support_number'
 GROUP_PTS = 'group_pts'
 EVENT_LIST = 'event_list'
+DEMAND_NUMBER = 'demand_number'
+
 
 # comment
 COMMENT_ID = 'comment_id'
@@ -56,4 +61,6 @@ HEALTH_LIST = 'health_list'
 ILLNESS_ID = 'illness_id'
 ILLNESS_LIST = 'illness_list'
 
-
+# loving_bank
+LOVE_COIN = 'love_coin'
+SCORE = 'score'

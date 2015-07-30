@@ -13,7 +13,7 @@ class dbhelper:
   '''
   @staticmethod
   def connect():
-    return MySQLdb.connect(host='127.0.0.1', user='root', db='ehelp', charset='utf8')
+    return MySQLdb.connect(host='127.0.0.1', user='root', db='ehelp_team1', charset='utf8')
 
   
   '''
@@ -38,6 +38,7 @@ class dbhelper:
   execute insert operation on database.
   '''
   @staticmethod
+
   def insert(sql):
     conn = dbhelper.connect()
     cursor = conn.cursor()

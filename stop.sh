@@ -1,2 +1,2 @@
 #!/bin/bash
-pkill -9 -f main.py
+pkill -9 -f python

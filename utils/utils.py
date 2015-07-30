@@ -1,4 +1,5 @@
 #!/usr/python
+# -*- coding: utf-8 -*-
 from tornado.escape import json_decode
 
 
