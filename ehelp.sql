@@ -146,6 +146,7 @@ CREATE TABLE `event` (
   `group_pts` decimal(7,4) NOT NULL DEFAULT '0.0000',
   `demand_number` int(11) NOT NULL DEFAULT '0',
   `love_coin` int(11) NOT NULL DEFAULT '0',
+  `comment` varchar(500) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `launcher_idx` (`launcher`),
   CONSTRAINT `event_launcher_fk` FOREIGN KEY (`launcher`) REFERENCES `account` (`id`) ON DELETE CASCADE ON UPDATE CASCADE

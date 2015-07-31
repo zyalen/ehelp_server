@@ -273,7 +273,6 @@ launch a help event by launcher.
         -2 if lack love_coin
 '''
 def add_event(data):
-  print data
   if KEY.ID not in data or KEY.TYPE not in data or KEY.TITLE not in data:
     return -1
   if KEY.LOVE_COIN in data:
@@ -286,7 +285,6 @@ def add_event(data):
   event_id = -1
   try:
     event_id = dbhelper.insert(sql%(data[KEY.ID], data[KEY.TYPE]))
-    print event_id
     if event_id > 0:
       data[KEY.EVENT_ID] = event_id
       update_event(data)
@@ -443,6 +441,7 @@ def get_events(data, get_event_id_list):
     event_info = get_event_information(event_info)
     if event_info is not None:
       event_list.append(event_info)
+    event_info = {}
   return event_list
 
 '''
@@ -1117,6 +1116,10 @@ def query_static_relation(data):
   if KEY.ID not in data:
     return id_list
   sql = "select user_b from static_relation where user_a = %d"%data[KEY.ID]
+  if KEY.TYPE in data:
+    if data[KEY.TYPE] == 0 or data[KEY.TYPE] ==1 or data[KEY.TYPE] == 2:
+      sql += " and type = %d"%data[KEY.TYPE]
+  print sql
   sql_result = dbhelper.execute_fetchall(sql)
   resp = {}
   for each_result in sql_result:
