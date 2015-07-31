@@ -273,7 +273,6 @@ launch a help event by launcher.
         -2 if lack love_coin
 '''
 def add_event(data):
-  print data
   if KEY.ID not in data or KEY.TYPE not in data or KEY.TITLE not in data:
     return -1
   if KEY.LOVE_COIN in data:
@@ -286,7 +285,6 @@ def add_event(data):
   event_id = -1
   try:
     event_id = dbhelper.insert(sql%(data[KEY.ID], data[KEY.TYPE]))
-    print event_id
     if event_id > 0:
       data[KEY.EVENT_ID] = event_id
       update_event(data)
@@ -437,8 +435,8 @@ get information of a collection of events.
 def get_events(data, get_event_id_list):
   event_id_list = get_event_id_list(data)
   event_list = []
-  event_info = {}
   for event_id in event_id_list:
+    event_info = {}
     event_info[KEY.EVENT_ID] = event_id
     event_info = get_event_information(event_info)
     if event_info is not None:
