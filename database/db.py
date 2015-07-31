@@ -435,8 +435,8 @@ get information of a collection of events.
 def get_events(data, get_event_id_list):
   event_id_list = get_event_id_list(data)
   event_list = []
-  event_info = {}
   for event_id in event_id_list:
+    event_info = {}
     event_info[KEY.EVENT_ID] = event_id
     event_info = get_event_information(event_info)
     if event_info is not None:
