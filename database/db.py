@@ -297,7 +297,8 @@ def add_event(data):
 '''
 modify information of a help event.
 @params  includes event_id, which is id of the event to be modified.
-         option params includes: title of event, content of event, longitude and latitude of event, state of event.
+         option params includes: title of event, content of event, longitude and latitude of event, state of event,
+         the number of the demand person, the number of the love_coin to paid, the comment of the event.
 @return True if successfully modifies.
         False otherwise.
 '''
@@ -366,7 +367,7 @@ def update_event(data):
       result &= False
 
   if KEY.LOCATION in data:
-    sql = "updata event set location = '%s' where id = %d"
+    sql = "update event set location = '%s' where id = %d"
     try:
       dbhelper.execute(sql%(data[KEY.LOCATION], data[KEY.EVENT_ID]))
       result &= True
@@ -452,7 +453,6 @@ def get_events(data, get_event_id_list):
     event_info = get_event_information(event_info)
     if event_info is not None:
       event_list.append(event_info)
-    event_info = {}
   return event_list
 
 '''
@@ -746,7 +746,7 @@ def health_record(data):
   print data
   if KEY.ID not in data:
     return -1
-  sql = "insert into health(user_id, time) values(%d, now())"%data[KEY.ID]
+  sql = "insert into health (user_id, type, value, time) values (%d, %d, %f, now())"
   record_id = -1
   try:
     print sql
@@ -1051,6 +1051,9 @@ update information about an answer
 @return
 '''
 def update_answer(data):
+  if KEY.ANSWER_ID not in data:
+    return False
+
   result = True
   sql = ""
   if KEY.CONTENT in data:
