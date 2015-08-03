@@ -364,7 +364,7 @@ def update_event(data):
       result &= False
 
   if KEY.LOCATION in data:
-    sql = "updata event set location = '%s' where id = %d"
+    sql = "update event set location = '%s' where id = %d"
     try:
       dbhelper.execute(sql%(data[KEY.LOCATION], data[KEY.EVENT_ID]))
       result &= True
