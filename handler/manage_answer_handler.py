@@ -38,3 +38,22 @@ class Get_Answerlist_Handler(RequestHandler):
     resp[KEY.STATUS] = STATUS.OK
 
     self.write(json_encode(resp))
+
+
+class Update_AnswerInformation_Handler(RequestHandler):
+  def post(self):
+    params = utils.decode_params(self.request)
+
+    resp = {}
+    result = db.update_answer(params)
+    if result:
+      answer_info = {}
+      answer_info[KEY.ANSWER_ID] = params[KEY.ANSWER_ID]
+      resp = db.get_answer_info(answer_info)
+      if resp is None:
+        resp = {}
+      resp[KEY.STATUS] = STATUS.OK
+    else:
+      resp[KEY.STATUS] = STATUS.ERROR
+
+    self.write(json_encode(resp))
