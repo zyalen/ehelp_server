@@ -70,6 +70,7 @@ CREATE TABLE `comment` (
   `author` int(11) NOT NULL,
   `content` text,
   `time` datetime DEFAULT NULL,
+  `parent_author` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `event_id_idx` (`event_id`),
   KEY `author_idx` (`author`),
