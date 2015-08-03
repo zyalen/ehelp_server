@@ -174,6 +174,7 @@ CREATE TABLE `health` (
   `anaphylaxis` varchar(500) DEFAULT NULL,
   `time` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `user_uni` (`user_id`),
   KEY `user_idx` (`user_id`),
   CONSTRAINT `health_userid_fk` FOREIGN KEY (`user_id`) REFERENCES `account` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

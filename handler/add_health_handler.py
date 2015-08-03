@@ -15,12 +15,15 @@ class Add_Health_Handler(RequestHandler):
     params = utils.decode_params(self.request)
     
     resp = {}
-    health_id = db.health_record(params)
-    if health_id > 0:
-      resp = db.get_health_record(health_id)
-      if resp is None:
-        resp = {}      
-      resp[KEY.STATUS] = STATUS.OK
+    if KEY.ID in params:
+      health_id = db.health_record(params)
+      if health_id > 0:
+        resp = db.get_health_record(params[KEY.ID])
+        if resp is None:
+          resp = {}
+        resp[KEY.STATUS] = STATUS.OK
+      else:
+        resp[KEY.STATUS] = STATUS.ERROR
     else:
       resp[KEY.STATUS] = STATUS.ERROR
     

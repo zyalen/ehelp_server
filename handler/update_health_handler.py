@@ -14,9 +14,9 @@ class Update_Health_Handler(RequestHandler):
     params = utils.decode_params(self.request)
 
     resp = {}
-    if KEY.HEALTH_ID in params:
+    if KEY.ID in params:
       if db.update_health_record(params):
-        resp = db.get_health_record(params[KEY.HEALTH_ID])
+        resp = db.get_health_record(params[KEY.ID])
         if resp is None:
           resp = {}
         resp[KEY.STATUS] = STATUS.OK

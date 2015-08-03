@@ -743,19 +743,14 @@ add a health record of a user into database.
         -1 indicates fail.
 '''
 def health_record(data):
-  print data
   if KEY.ID not in data:
     return -1
-  sql = "insert into health (user_id, type, value, time) values (%d, %d, %f, now())"
+  sql = "insert into health (user_id, time) values (%d, now())"%data[KEY.ID]
   record_id = -1
   try:
-    print sql
     record_id = dbhelper.insert(sql)
-    print record_id
     if record_id > 0:
-      data[KEY.HEALTH_ID] = record_id
       if not update_health_record(data):
-        print "2"
         return -1
     return record_id
   except:
@@ -766,15 +761,15 @@ def health_record(data):
 
 '''
 get details of one certain health record.
-@params includes record_id, id of the health record.
+@params includes user_id, id of the user.
 @return details of the health record, contains record id, user id, type, certain value and record time.
         None indicates fail query.
 '''
-def get_health_record(record_id):
-  sql = "select * from health where id = %d"
+def get_health_record(user_id):
+  sql = "select * from health where user_id = %d"
   record = None
   try:
-    sql_result = dbhelper.execute_fetchone(sql%(record_id))
+    sql_result = dbhelper.execute_fetchone(sql%(user_id))
     if sql_result is not None:
       record = {}
       record[KEY.HEALTH_ID] = sql_result[0]
@@ -1192,63 +1187,62 @@ def get_supporters(data):
 
 '''
 modify information of a health record.
-@params  includes health_id, which is id of the health record to be modified.
+@params  includes id, user's id.
          option params includes: height, weight, blood_type,
                                  medicine_taken, medical_history, anaphylaxis
 @return True if successfully modifies.
         False otherwise.
 '''
 def update_health_record(data):
-  print data
   result = True
-  if KEY.HEALTH_ID not in data:
+  if KEY.ID not in data:
     return False
   sql = ""
 
   if KEY.HEIGHT in data:
-    sql = "update health set height = %d where id = %d"
+    sql = "update health set height = %d where user_id = %d"
     try:
-      dbhelper.execute(sql%(data[KEY.HEIGHT], data[KEY.HEALTH_ID]))
+      dbhelper.execute(sql%(data[KEY.HEIGHT], data[KEY.ID]))
       result &= True
     except:
       result &= False
 
   if KEY.WEIGHT in data:
-    sql = "update health set weight = %d where id = %d"
+    sql = "update health set weight = %d where user_id = %d"
     try:
-      dbhelper.execute(sql%(data[KEY.WEIGHT], data[KEY.HEALTH_ID]))
+      dbhelper.execute(sql%(data[KEY.WEIGHT], data[KEY.ID]))
       result &= True
     except:
       result &= False
 
   if KEY.BLOOD_TYPE in data:
-    sql = "update health set blood_type = '%s' where id = %d"
+    sql = "update health set blood_type = '%s' where user_id = %d"
     try:
-      dbhelper.execute(sql%(data[KEY.BLOOD_TYPE], data[KEY.HEALTH_ID]))
+      dbhelper.execute(sql%(data[KEY.BLOOD_TYPE], data[KEY.ID]))
       result &= True
     except:
       result &= False
 
   if KEY.MEDICINE_TAKEN in data:
-    sql = "update health set medicine_taken = '%s' where id = %d"
+    sql = "update health set medicine_taken = '%s' where user_id = %d"
     try:
-      dbhelper.execute(sql%(data[KEY.MEDICINE_TAKEN], data[KEY.HEALTH_ID]))
+      dbhelper.execute(sql%(data[KEY.MEDICINE_TAKEN], data[KEY.ID]))
       result &= True
     except:
       result &= False
 
   if KEY.MEDICAL_HISTORY in data:
-    sql = "update health set medical_history = '%s' where id = %d"
+    sql = "update health set medical_history = '%s' where user_id = %d"
     try:
-      dbhelper.execute(sql%(data[KEY.MEDICAL_HISTORY], data[KEY.HEALTH_ID]))
+      dbhelper.execute(sql%(data[KEY.MEDICAL_HISTORY], data[KEY.ID]))
       result &= True
     except:
       result &= False
 
   if KEY.ANAPHYLAXIS in data:
-    sql = "update health set anaphylaxis = '%s' where id = %d"
+    sql = "update health set anaphylaxis = '%s' where user_id = %d"
     try:
-      dbhelper.execute(sql%(data[KEY.ANAPHYLAXIS], data[KEY.HEALTH_ID]))
+      dbhelper.execute(sql%(data[KEY.ANAPHYLAXIS], data[KEY.ID]))
       result &= True
     except:
       result &= False
