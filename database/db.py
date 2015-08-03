@@ -450,7 +450,6 @@ def get_events(data, get_event_id_list):
     event_info = get_event_information(event_info)
     if event_info is not None:
       event_list.append(event_info)
-    event_info = {}
   return event_list
 
 '''
