@@ -54,6 +54,7 @@ COMMENT_ID = 'comment_id'
 AUTHOR_ID = 'author_id'
 AUTHOR = 'author'
 COMMENT_LIST = 'comment_list'
+PARENT_AUTHOR = 'parent_author'
 
 # health
 HEALTH_ID = 'health_id'

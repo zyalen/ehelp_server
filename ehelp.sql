@@ -70,11 +70,12 @@ CREATE TABLE `comment` (
   `author` int(11) NOT NULL,
   `content` text,
   `time` datetime DEFAULT NULL,
-  `follow_id` int(11) DEFAULT '-1',
+  `parent_author` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `event_id_idx` (`event_id`),
   KEY `author_idx` (`author`),
   CONSTRAINT `comment_author_fk` FOREIGN KEY (`author`) REFERENCES `account` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `comment_parent_author_fk` FOREIGN KEY (`parent_author`) REFERENCES `account` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `comment_eventid_fk` FOREIGN KEY (`event_id`) REFERENCES `event` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;

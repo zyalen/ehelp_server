@@ -443,8 +443,8 @@ get information of a collection of events.
 def get_events(data, get_event_id_list):
   event_id_list = get_event_id_list(data)
   event_list = []
+  event_info = {}
   for event_id in event_id_list:
-    event_info = {}
     event_info[KEY.EVENT_ID] = event_id
     event_info = get_event_information(event_info)
     if event_info is not None:
@@ -543,21 +543,28 @@ def user_event_manage(data):
 
 
 '''
-add a new comment to a help event.
+add a new comment to a help event or a exist comment.
 @params includes event_id, represents comment belongs to which event,
                  author, user's id, author of comment,
-                 content, content of comment.
+                 content, content of comment,
+                 parent_author, a author of parent comment
 @return new comment id if succeed,
         -1 otherwise.
 '''
 def add_comment(data):
+  print data
   if KEY.ID not in data or KEY.EVENT_ID not in data:
     return -1
   if KEY.CONTENT not in data:
     return -1
-  sql = "insert into comment (event_id, author, content, time) values (%d, %d, '%s', now())"
+  if KEY.PARENT_AUTHOR not in data:
+    sql = "insert into comment (event_id, author, content, time) values (%d, %d, '%s', now())"
+    sql = sql%(data[KEY.EVENT_ID], data[KEY.ID], data[KEY.CONTENT])
+  else:
+    sql = "insert into comment (event_id, author, content, time, parent_author) values (%d, %d, '%s', now(), %d)"
+    sql = sql%(data[KEY.EVENT_ID], data[KEY.ID], data[KEY.CONTENT], data[KEY.PARENT_AUTHOR])
   try:
-    comment_id = dbhelper.insert(sql%(data[KEY.EVENT_ID], data[KEY.ID], data[KEY.CONTENT]))
+    comment_id = dbhelper.insert(sql)
     return comment_id
   except:
     return -1
@@ -620,7 +627,7 @@ get detail information of a comment.
 def get_comment_info(data):
   if KEY.COMMENT_ID not in data:
     return None
-  sql = "select event_id, author, content, time from comment where id = %d"
+  sql = "select event_id, author, content, time, parent_author from comment where id = %d"
   comment_info = None
   try:
     sql_result = dbhelper.execute_fetchone(sql%(data[KEY.COMMENT_ID]))
@@ -631,6 +638,7 @@ def get_comment_info(data):
       comment_info[KEY.AUTHOR_ID] = sql_result[1]
       comment_info[KEY.CONTENT] = sql_result[2]
       comment_info[KEY.TIME] = str(sql_result[3])
+      comment_info[KEY.PARENT_AUTHOR] = str(sql_result[4])
       user = {}
       user[KEY.ID] = comment_info[KEY.AUTHOR_ID]
       user = get_user_information(user)
