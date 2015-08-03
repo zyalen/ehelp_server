@@ -59,6 +59,12 @@ PARENT_AUTHOR = 'parent_author'
 # health
 HEALTH_ID = 'health_id'
 HEALTH_LIST = 'health_list'
+HEIGHT = 'height'
+WEIGHT = 'weight'
+BLOOD_TYPE = 'blood_type'
+MEDICINE_TAKEN = 'medicine_taken'
+MEDICAL_HISTORY = 'medical_history'
+ANAPHYLAXIS = 'anaphylaxis'
 
 # illness
 ILLNESS_ID = 'illness_id'

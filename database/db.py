@@ -287,7 +287,8 @@ def add_event(data):
     event_id = dbhelper.insert(sql%(data[KEY.ID], data[KEY.TYPE]))
     if event_id > 0:
       data[KEY.EVENT_ID] = event_id
-      update_event(data)
+      if not update_event(data):
+        return -1
     return event_id
   except:
     return -1
@@ -302,6 +303,8 @@ modify information of a help event.
 '''
 def update_event(data):
   result = True
+  if KEY.EVENT_ID not in data:
+    return False
   sql = ""
   if KEY.TITLE in data:
     data[KEY.TITLE] = MySQLdb.escape_string(data[KEY.TITLE].encode("utf8"))
@@ -730,18 +733,31 @@ def evaluate_user(data):
 '''
 add a health record of a user into database.
 @params includes id, user's id.
-                 type, type of health indicator.
-                 value, value of some health indicator.
+                 height, user's height.
+                 weight, user's weight.
+                 blood_type, user's blood type.
+                 medicine_taken, medicine user used to have
+                 medical_history, user's medical chart
+                 anaphylaxis, user's allergic reaction
 @return the health record id of the new record.
         -1 indicates fail.
 '''
 def health_record(data):
-  if KEY.ID not in data or KEY.TYPE not in data or KEY.VALUE not in data:
+  print data
+  if KEY.ID not in data:
     return -1
-  sql = "insert into health (user_id, type, value, time) values (%d, %d, %f, now())"
+  sql = "insert into health(user_id, time) values(%d, now())"%data[KEY.ID]
   record_id = -1
   try:
-    record_id = dbhelper.insert(sql%(data[KEY.ID], data[KEY.TYPE], data[KEY.VALUE]))
+    print sql
+    record_id = dbhelper.insert(sql)
+    print record_id
+    if record_id > 0:
+      data[KEY.HEALTH_ID] = record_id
+      if not update_health_record(data):
+        print "2"
+        return -1
+    return record_id
   except:
     record_id = -1
   finally:
@@ -755,7 +771,7 @@ get details of one certain health record.
         None indicates fail query.
 '''
 def get_health_record(record_id):
-  sql = "select id, user_id, type, value, time from health where id = %d"
+  sql = "select * from health where id = %d"
   record = None
   try:
     sql_result = dbhelper.execute_fetchone(sql%(record_id))
@@ -763,9 +779,12 @@ def get_health_record(record_id):
       record = {}
       record[KEY.HEALTH_ID] = sql_result[0]
       record[KEY.USER_ID] = sql_result[1]
-      record[KEY.TYPE] = sql_result[2]
-      record[KEY.VALUE] = float(sql_result[3])
-      record[KEY.TIME] = str(sql_result[4])
+      record[KEY.HEIGHT] = sql_result[2]
+      record[KEY.WEIGHT] = sql_result[3]
+      record[KEY.BLOOD_TYPE] = str(sql_result[4])
+      record[KEY.MEDICINE_TAKEN] = str(sql_result[5])
+      record[KEY.MEDICAL_HISTORY] = str(sql_result[6])
+      record[KEY.ANAPHYLAXIS] = str(sql_result[7])
   except:
     record = None
   finally:
@@ -773,11 +792,11 @@ def get_health_record(record_id):
 
 
 '''
+---------------------change the database & this method is not used-----------------------
 get all health records of a user, but at most 100 records.
 @params includes id, user's id.
 @return a list that contain all health records. each element is a json that contains details information of a health record.
         None indicates fail query.
-'''
 def get_health_records(data):
   if KEY.ID not in data:
     return None
@@ -796,6 +815,8 @@ def get_health_records(data):
         if a_record is not None:
           records.append(a_record)
   return records
+-----------------------------------------------------------------------------------------
+'''
 
 
 '''
@@ -938,7 +959,7 @@ def get_neighbor(data):
   user = get_user_information(data)
   if user is None:
     return neighbor_uid_list
-  DISTANCE = 0.5 # 500m
+  DISTANCE = 5.0 # 5000m
   location_range = haversine.get_range(user[KEY.LONGITUDE], user[KEY.LATITUDE], DISTANCE)
   sql = "select identity_id from user where " \
         "longitude > %f and longitude < %f " \
@@ -1143,3 +1164,90 @@ def query_static_relation(data):
       resp = get_user_information(resp)
       id_list.append(resp)
   return id_list
+
+'''
+get supporters for an event
+@param includes event id
+       options  type of supporters
+@return a list of supporters
+'''
+def get_supporters(data):
+  sup_list = []
+  if KEY.EVENT_ID not in data:
+    return sup_list
+  sql = "select supporter from support_relation where event_id = %d"%data[KEY.EVENT_ID]
+  if KEY.TYPE in data:
+    sql += " and type = %d"%data[KEY.TYPE]
+  sql_result = dbhelper.execute_fetchall(sql)
+  resp = {}
+  for each_result in sql_result:
+    for each_id in each_result:
+      resp[KEY.ID] = each_id
+      resp = get_user_information(resp)
+      sup_list.append(resp)
+  return sup_list
+
+'''
+modify information of a health record.
+@params  includes health_id, which is id of the health record to be modified.
+         option params includes: height, weight, blood_type,
+                                 medicine_taken, medical_history, anaphylaxis
+@return True if successfully modifies.
+        False otherwise.
+'''
+def update_health_record(data):
+  print data
+  result = True
+  if KEY.HEALTH_ID not in data:
+    return False
+  sql = ""
+
+  if KEY.HEIGHT in data:
+    sql = "update health set height = %d where id = %d"
+    try:
+      dbhelper.execute(sql%(data[KEY.HEIGHT], data[KEY.HEALTH_ID]))
+      result &= True
+    except:
+      result &= False
+
+  if KEY.WEIGHT in data:
+    sql = "update health set weight = %d where id = %d"
+    try:
+      dbhelper.execute(sql%(data[KEY.WEIGHT], data[KEY.HEALTH_ID]))
+      result &= True
+    except:
+      result &= False
+
+  if KEY.BLOOD_TYPE in data:
+    sql = "update health set blood_type = '%s' where id = %d"
+    try:
+      dbhelper.execute(sql%(data[KEY.BLOOD_TYPE], data[KEY.HEALTH_ID]))
+      result &= True
+    except:
+      result &= False
+
+  if KEY.MEDICINE_TAKEN in data:
+    sql = "update health set medicine_taken = '%s' where id = %d"
+    try:
+      dbhelper.execute(sql%(data[KEY.MEDICINE_TAKEN], data[KEY.HEALTH_ID]))
+      result &= True
+    except:
+      result &= False
+
+  if KEY.MEDICAL_HISTORY in data:
+    sql = "update health set medical_history = '%s' where id = %d"
+    try:
+      dbhelper.execute(sql%(data[KEY.MEDICAL_HISTORY], data[KEY.HEALTH_ID]))
+      result &= True
+    except:
+      result &= False
+
+  if KEY.ANAPHYLAXIS in data:
+    sql = "update health set anaphylaxis = '%s' where id = %d"
+    try:
+      dbhelper.execute(sql%(data[KEY.ANAPHYLAXIS], data[KEY.HEALTH_ID]))
+      result &= True
+    except:
+      result &= False
+
+  return result

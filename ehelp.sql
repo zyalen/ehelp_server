@@ -166,8 +166,13 @@ DROP TABLE IF EXISTS `health`;
 CREATE TABLE `health` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
-  `type` int(11) DEFAULT NULL,
-  `value` decimal(7,4) DEFAULT NULL,
+  `height` int(11) DEFAULT NULL,
+  `weight` int(11) DEFAULT NULL,
+  `blood_type` varchar(10) DEFAULT NULL,
+  `medicine_taken` varchar(500) DEFAULT NULL,
+  `medical_history` varchar(500) DEFAULT NULL,
+  `anaphylaxis` varchar(500) DEFAULT NULL,
+  `time` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `user_idx` (`user_id`),
   CONSTRAINT `health_userid_fk` FOREIGN KEY (`user_id`) REFERENCES `account` (`id`) ON DELETE CASCADE ON UPDATE CASCADE

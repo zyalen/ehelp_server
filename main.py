@@ -32,6 +32,8 @@ from handler import evaluate_handler
 from handler import loving_bank_handler
 from handler import manage_answer_handler
 from handler import get_event_information_handler
+from handler import get_supporter_handler
+from handler import update_health_handler
 
 os.chdir(os.path.join(os.getcwd(), os.path.dirname(sys.argv[0])))
 
@@ -67,6 +69,8 @@ def main():
       (r"/event/add_ans", manage_answer_handler.Add_Answer_Handler),
       (r"/event/anslist", manage_answer_handler.Get_Answerlist_Handler),
       (r"/event/get_information", get_event_information_handler.Get_Event_Information_Handler),
+      (r"/event/get_supporter", get_supporter_handler.Get_Supporter_Handler_Handler),
+      (r"/health/update", update_health_handler.Update_Health_Handler),
       (r"/(.*)", tornado.web.StaticFileHandler, {"path": "static"}),
     ], debug=True)
   http_server = tornado.httpserver.HTTPServer(application)
