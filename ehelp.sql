@@ -70,6 +70,7 @@ CREATE TABLE `comment` (
   `author` int(11) NOT NULL,
   `content` text,
   `time` datetime DEFAULT NULL,
+  `follow_id` int(11) DEFAULT '-1',
   PRIMARY KEY (`id`),
   KEY `event_id_idx` (`event_id`),
   KEY `author_idx` (`author`),
@@ -147,6 +148,7 @@ CREATE TABLE `event` (
   `demand_number` int(11) NOT NULL DEFAULT '0',
   `love_coin` int(11) NOT NULL DEFAULT '0',
   `comment` varchar(500) DEFAULT NULL,
+  `location` varchar(500) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `launcher_idx` (`launcher`),
   CONSTRAINT `event_launcher_fk` FOREIGN KEY (`launcher`) REFERENCES `account` (`id`) ON DELETE CASCADE ON UPDATE CASCADE

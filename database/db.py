@@ -362,6 +362,13 @@ def update_event(data):
     except:
       result &= False
 
+  if KEY.LOCATION in data:
+    sql = "updata event set location = '%s' where id = %d"
+    try:
+      dbhelper.execute(sql%(data[KEY.LOCATION], data[KEY.EVENT_ID]))
+      result &= True
+    except:
+      result &= False
   return result
 
 
@@ -415,6 +422,7 @@ def get_event_information(data):
       event_info[KEY.DEMAND_NUMBER] = sql_result[13]
       event_info[KEY.LOVE_COIN] = sql_result[14]
       event_info[KEY.COMMENT] = str(sql_result[15])
+      event_info[KEY.LOCATION] = str(sql_result[16])
       user = {}
       user[KEY.ID] = event_info[KEY.LAUNCHER_ID]
       user = get_user_information(user)
