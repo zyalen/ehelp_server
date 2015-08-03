@@ -296,7 +296,8 @@ def add_event(data):
 '''
 modify information of a help event.
 @params  includes event_id, which is id of the event to be modified.
-         option params includes: title of event, content of event, longitude and latitude of event, state of event.
+         option params includes: title of event, content of event, longitude and latitude of event, state of event,
+         the number of the demand person, the number of the love_coin to paid, the comment of the event.
 @return True if successfully modifies.
         False otherwise.
 '''
@@ -1013,6 +1014,9 @@ update information about an answer
 @return
 '''
 def update_answer(data):
+  if KEY.ANSWER_ID not in data:
+    return False
+
   result = True
   sql = ""
   if KEY.CONTENT in data:
