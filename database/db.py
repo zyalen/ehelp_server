@@ -407,7 +407,7 @@ def get_event_information(data):
     if sql_result is not None:
       event_info = {}
       event_info[KEY.EVENT_ID] = sql_result[0]
-      event_info[KEY.LAUNCHER_ID] = sql_result[1]
+      event_info[KEY.LAUNCHER] = sql_result[1]
       event_info[KEY.TITLE] = sql_result[2]
       event_info[KEY.CONTENT] = sql_result[3]
       event_info[KEY.TYPE] = sql_result[4]
@@ -449,7 +449,7 @@ def get_events(data, get_event_id_list):
     event_info = get_event_information(event_info)
     if event_info is not None:
       event_list.append(event_info)
-    event_info = {}
+    #event_info = {}
   return event_list
 
 '''
@@ -552,7 +552,7 @@ add a new comment to a help event or a exist comment.
         -1 otherwise.
 '''
 def add_comment(data):
-  print data
+
   if KEY.ID not in data or KEY.EVENT_ID not in data:
     return -1
   if KEY.CONTENT not in data:
@@ -1135,7 +1135,6 @@ def query_static_relation(data):
   if KEY.TYPE in data:
     if data[KEY.TYPE] == 0 or data[KEY.TYPE] ==1 or data[KEY.TYPE] == 2:
       sql += " and type = %d"%data[KEY.TYPE]
-  print sql
   sql_result = dbhelper.execute_fetchall(sql)
   resp = {}
   for each_result in sql_result:
