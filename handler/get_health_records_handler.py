@@ -17,11 +17,8 @@ class Get_Health_Records_Handler(RequestHandler):
     resp = {}
     if KEY.ID in params:
       records = db.get_health_record(params[KEY.ID])
-      if records is None:
-        resp[KEY.STATUS] = STATUS.ERROR
-      else:
-        resp = records
-        resp[KEY.STATUS] = STATUS.OK
+      resp[KEY.HEALTH_LIST] = records
+      resp[KEY.STATUS] = STATUS.OK
     else:
       resp[KEY.STATUS] = STATUS.ERROR
     

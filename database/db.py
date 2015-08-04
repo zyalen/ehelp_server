@@ -411,7 +411,7 @@ def get_event_information(data):
     if sql_result is not None:
       event_info = {}
       event_info[KEY.EVENT_ID] = sql_result[0]
-      event_info[KEY.LAUNCHER] = sql_result[1]
+      event_info[KEY.LAUNCHER_ID] = sql_result[1]
       event_info[KEY.TITLE] = sql_result[2]
       event_info[KEY.CONTENT] = sql_result[3]
       event_info[KEY.TYPE] = sql_result[4]
@@ -954,7 +954,7 @@ def get_neighbor(data):
   user = get_user_information(data)
   if user is None:
     return neighbor_uid_list
-  DISTANCE = 5.0 # 5000m
+  DISTANCE = 25.0 # 25000m
   location_range = haversine.get_range(user[KEY.LONGITUDE], user[KEY.LATITUDE], DISTANCE)
   sql = "select identity_id from user where " \
         "longitude > %f and longitude < %f " \
@@ -969,8 +969,9 @@ def get_neighbor(data):
 get help_events happend around the user
 @param include event id
  option params includes state indicates all events or those starting or ended.
-                 type indicates type of events.
-                 last_time indicates the last time client update
+                        type indicates type of events.
+                        state indicates state of events.
+                        last_time indicates the last time client update.
 @return a list of event
 '''
 def get_nearby_event(data):
@@ -978,14 +979,17 @@ def get_nearby_event(data):
   if KEY.ID not in data:
     return nearby_event_list
   user = get_user_information(data)
-  DISTANCE = 0.5 # 500m
+  DISTANCE = 25.0 # 25000m
   location_range = haversine.get_range(user[KEY.LONGITUDE], user[KEY.LATITUDE], DISTANCE)
   sql = "select id from event where " \
         "longitude > %f and longitude < %f " \
         "and latitude > %f and latitude < %f"\
         %(location_range[0], location_range[1], location_range[2], location_range[3])
+  print sql
   if KEY.TYPE in data:
     sql += " and type = %d"%data[KEY.TYPE]
+  if KEY.STATE in data:
+    sql += " and state = %d"%data[KEY.STATE]
   if KEY.LAST_TIME in data:
     sql += " and last_time > '%s'"%data[KEY.LAST_TIME]
   sql += " order by time DESC"

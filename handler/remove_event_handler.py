@@ -12,13 +12,14 @@ from database import db
 
 class Remove_Event_Handler(RequestHandler):
   def post(self):
+    print self
     params = utils.decode_params(self.request)
     
     resp = {}
     result = db.remove_event(params)
     if KEY.EVENT_ID in params:
       resp[KEY.EVENT_ID] = params[KEY.EVENT_ID]
-    if result:     
+    if result:
       resp[KEY.STATUS] = STATUS.OK
     else:
       resp[KEY.STATUS] = STATUS.ERROR
