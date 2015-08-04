@@ -16,14 +16,10 @@ class Add_Health_Handler(RequestHandler):
     
     resp = {}
     if KEY.ID in params:
-      health_id = db.health_record(params)
-      if health_id > 0:
-        resp = db.get_health_record(params[KEY.ID])
-        if resp is None:
-          resp = {}
+      if db.upload_health(params):
+        res = db.get_health_record(params[KEY.ID])
+        resp = res
         resp[KEY.STATUS] = STATUS.OK
-      else:
-        resp[KEY.STATUS] = STATUS.ERROR
     else:
       resp[KEY.STATUS] = STATUS.ERROR
     

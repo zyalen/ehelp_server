@@ -1187,9 +1187,9 @@ def get_supporters(data):
 
 '''
 modify information of a health record.
-@params  includes id, user's id.
-         option params includes: height, weight, blood_type,
-                                 medicine_taken, medical_history, anaphylaxis
+@params  includes: id, user's id.
+         options:  height, weight, blood_type,
+                   medicine_taken, medical_history, anaphylaxis
 @return True if successfully modifies.
         False otherwise.
 '''
@@ -1248,3 +1248,25 @@ def update_health_record(data):
       result &= False
 
   return result
+
+'''
+judge the health_card is in database or not.
+if it exist in database, update data.
+else, insert data.
+@param include: id, user's id
+       options: height, weight, blood_type,
+                medicine_taken, medical_history, anaphylaxis
+@return True if insert or update successfully
+        False if fail
+'''
+def upload_health(data):
+  if KEY.ID not in data:
+    return False
+  sql = "select * from health where user_id = %d"%data[KEY.ID]
+  res = dbhelper.execute_fetchone(sql)
+  if res is not None:
+    return update_health_record(data)
+  else:
+    if health_record(data) > 0:
+      return True
+  return False
