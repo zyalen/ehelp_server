@@ -776,10 +776,10 @@ def get_health_record(user_id):
       record[KEY.USER_ID] = sql_result[1]
       record[KEY.HEIGHT] = sql_result[2]
       record[KEY.WEIGHT] = sql_result[3]
-      record[KEY.BLOOD_TYPE] = str(sql_result[4])
-      record[KEY.MEDICINE_TAKEN] = str(sql_result[5])
-      record[KEY.MEDICAL_HISTORY] = str(sql_result[6])
-      record[KEY.ANAPHYLAXIS] = str(sql_result[7])
+      record[KEY.BLOOD_TYPE] = sql_result[4]
+      record[KEY.MEDICINE_TAKEN] = sql_result[5]
+      record[KEY.MEDICAL_HISTORY] = sql_result[6]
+      record[KEY.ANAPHYLAXIS] = sql_result[7]
   except:
     record = None
   finally:
@@ -1216,6 +1216,7 @@ def update_health_record(data):
       result &= False
 
   if KEY.BLOOD_TYPE in data:
+    data[KEY.BLOOD_TYPE] = MySQLdb.escape_string(data[KEY.BLOOD_TYPE].encode("utf8"))
     sql = "update health set blood_type = '%s' where user_id = %d"
     try:
       dbhelper.execute(sql%(data[KEY.BLOOD_TYPE], data[KEY.ID]))
@@ -1224,6 +1225,7 @@ def update_health_record(data):
       result &= False
 
   if KEY.MEDICINE_TAKEN in data:
+    data[KEY.MEDICINE_TAKEN] = MySQLdb.escape_string(data[KEY.MEDICINE_TAKEN].encode("utf8"))
     sql = "update health set medicine_taken = '%s' where user_id = %d"
     try:
       dbhelper.execute(sql%(data[KEY.MEDICINE_TAKEN], data[KEY.ID]))
@@ -1232,6 +1234,7 @@ def update_health_record(data):
       result &= False
 
   if KEY.MEDICAL_HISTORY in data:
+    data[KEY.MEDICAL_HISTORY] = MySQLdb.escape_string(data[KEY.MEDICAL_HISTORY].encode("utf8"))
     sql = "update health set medical_history = '%s' where user_id = %d"
     try:
       dbhelper.execute(sql%(data[KEY.MEDICAL_HISTORY], data[KEY.ID]))
@@ -1240,6 +1243,7 @@ def update_health_record(data):
       result &= False
 
   if KEY.ANAPHYLAXIS in data:
+    data[KEY.ANAPHYLAXIS] = MySQLdb.escape_string(data[KEY.ANAPHYLAXIS].encode("utf8"))
     sql = "update health set anaphylaxis = '%s' where user_id = %d"
     try:
       dbhelper.execute(sql%(data[KEY.ANAPHYLAXIS], data[KEY.ID]))
