@@ -54,6 +54,7 @@ COMMENT_ID = 'comment_id'
 AUTHOR_ID = 'author_id'
 AUTHOR = 'author'
 COMMENT_LIST = 'comment_list'
+PARENT_AUTHOR_ID = 'parent_author_id'
 PARENT_AUTHOR = 'parent_author'
 
 # health
@@ -73,6 +74,8 @@ ILLNESS_LIST = 'illness_list'
 # loving_bank
 LOVE_COIN = 'love_coin'
 SCORE = 'score'
+SENDER = 'sender'
+RECEIVER = 'receiver'
 
 # answer
 ANSWER_ID = 'answer_id'

@@ -359,6 +359,7 @@ def update_event(data):
       result &= False
 
   if KEY.COMMENT in data:
+    data[KEY.COMMENT] = MySQLdb.escape_string(data[KEY.COMMENT].encode("utf8"))
     sql = "update event set comment = '%s' where id = %d"
     try:
       dbhelper.execute(sql%(data[KEY.COMMENT], data[KEY.EVENT_ID]))
@@ -367,6 +368,7 @@ def update_event(data):
       result &= False
 
   if KEY.LOCATION in data:
+    data[KEY.LOCATION] = MySQLdb.escape_string(data[KEY.LOCATION].encode("utf8"))
     sql = "update event set location = '%s' where id = %d"
     try:
       dbhelper.execute(sql%(data[KEY.LOCATION], data[KEY.EVENT_ID]))
@@ -425,8 +427,8 @@ def get_event_information(data):
       event_info[KEY.GROUP_PTS] = float(sql_result[12])
       event_info[KEY.DEMAND_NUMBER] = sql_result[13]
       event_info[KEY.LOVE_COIN] = sql_result[14]
-      event_info[KEY.COMMENT] = str(sql_result[15])
-      event_info[KEY.LOCATION] = str(sql_result[16])
+      event_info[KEY.COMMENT] = sql_result[15]
+      event_info[KEY.LOCATION] = sql_result[16]
       user = {}
       user[KEY.ID] = event_info[KEY.LAUNCHER_ID]
       user = get_user_information(user)
@@ -457,7 +459,7 @@ def get_events(data, get_event_id_list):
 
 '''
 get events that launch by user.
-@params includes user's id, 
+@params includes user's id,
                  option params includes state indicates all events or those starting or ended.
                  type indicates type of events.
                  last_time indicates the last time client update
@@ -469,7 +471,7 @@ def get_launch_event_list(data):
     return event_id_list
   sql = "select id from event where launcher = %d"%data[KEY.ID]
   if KEY.STATE in data:
-    if data[KEY.STATE] == 0 or data[KEY.STATE] == 1:      
+    if data[KEY.STATE] == 0 or data[KEY.STATE] == 1:
       sql += " and state = %d"%data[KEY.STATE]
   if KEY.TYPE in data:
     if data[KEY.TYPE] >= 0 and data[KEY.TYPE] <= 2:
@@ -560,6 +562,7 @@ def add_comment(data):
     return -1
   if KEY.CONTENT not in data:
     return -1
+  data[KEY.CONTENT] = MySQLdb.escape_string(data[KEY.CONTENT].encode("utf8"))
   if KEY.PARENT_AUTHOR not in data:
     sql = "insert into comment (event_id, author, content, time) values (%d, %d, '%s', now())"
     sql = sql%(data[KEY.EVENT_ID], data[KEY.ID], data[KEY.CONTENT])
@@ -641,12 +644,20 @@ def get_comment_info(data):
       comment_info[KEY.AUTHOR_ID] = sql_result[1]
       comment_info[KEY.CONTENT] = sql_result[2]
       comment_info[KEY.TIME] = str(sql_result[3])
-      comment_info[KEY.PARENT_AUTHOR] = str(sql_result[4])
+      comment_info[KEY.PARENT_AUTHOR_ID] = sql_result[4]
+      comment_info[KEY.AUTHOR] = None
+      comment_info[KEY.PARENT_AUTHOR] = None
+
       user = {}
       user[KEY.ID] = comment_info[KEY.AUTHOR_ID]
       user = get_user_information(user)
       if user is not None:
         comment_info[KEY.AUTHOR] = user[KEY.NICKNAME]
+      user = {}
+      user[KEY.ID] = comment_info[KEY.PARENT_AUTHOR_ID]
+      user = get_user_information(user)
+      if user is not None:
+        comment_info[KEY.PARENT_AUTHOR] = user[KEY.NICKNAME]
   except:
     pass
   finally:
@@ -711,7 +722,7 @@ def evaluate_user(data):
     return False
   if KEY.VALUE not in data:
     return False
-  
+
   value_list = ast.literal_eval(data[KEY.VALUE])
   value = 0.0
   for each_value in value_list:
@@ -1278,3 +1289,92 @@ def upload_health(data):
     if health_record(data) > 0:
       return True
   return False
+
+'''
+update information of user's loving bank.
+@params  includes: id, user's id.
+                   operation, 0 indicates add love_coin & score
+                              1 indicates minus love_coin & score
+                              2 indicates transform score to love_coin
+                   love_coin, the number of love_coin to add/minus
+                   score, the score number to add/minus
+@return True if successfully update.
+        False otherwise.
+'''
+def update_loving_bank(data):
+  if KEY.ID not in data and KEY.OPERATION not in data:
+    return False
+  if KEY.LOVE_COIN not in data and KEY.SCORE not in data:
+    return False
+
+  user = {}
+  user[KEY.USER_ID] = data[KEY.ID]
+  bank_info = get_user_loving_bank(user)
+  if bank_info is None:
+    return False
+
+  exchange_rate = 1
+  if data[KEY.OPERATION] == 0:
+    update_love_coin = bank_info[KEY.LOVE_COIN] + data[KEY.LOVE_COIN]
+    update_score = bank_info[KEY.SCORE] + data[KEY.SCORE]
+  elif data[KEY.OPERATION] == 1:
+    update_love_coin = bank_info[KEY.LOVE_COIN] - data[KEY.LOVE_COIN]
+    update_score = bank_info[KEY.SCORE] - data[KEY.SCORE]
+  elif data[KEY.OPERATION] == 2:
+    update_love_coin = bank_info[KEY.LOVE_COIN] + data[KEY.SCORE] * exchange_rate
+    update_score = bank_info[KEY.SCORE] - data[KEY.SCORE]
+  else:
+    return False
+
+  if update_love_coin < 0 or update_score < 0:
+    return False
+
+  sql = "update loving_bank set love_coin = %d, score_rank = %d where userid = %d"
+  try:
+    dbhelper.execute(sql%(update_love_coin, update_score, data[KEY.ID]))
+    return True
+  except:
+    return False
+
+'''
+user_A transfer the love_coin to user_B
+@param includes: sender: user_A's id, who want to transfer the love_coin
+                 receiver: user_B's id, who receives the transferred love_coin
+                 love_coin: the number of love_coin which would be transferred
+@return True if transfer successfully
+        False if fails
+'''
+def love_coin_transfer(data):
+  if KEY.SENDER not in data and KEY.RECEIVER not in data:
+    return False
+  if KEY.LOVE_COIN not in data:
+    return False
+
+  sender = {}
+  receiver = {}
+  sender[KEY.USER_ID] = data[KEY.SENDER]
+  receiver[KEY.USER_ID] = data[KEY.RECEIVER]
+  sender = get_user_loving_bank(sender)
+  receiver = get_user_loving_bank(receiver)
+  print sender, receiver
+  if sender is None or receiver is None:
+    return False
+  update_sender_coin = sender[KEY.LOVE_COIN] - data[KEY.LOVE_COIN]
+  update_receiver_coin = receiver[KEY.LOVE_COIN] + data[KEY.LOVE_COIN]
+
+  if update_sender_coin < 0 or update_receiver_coin < 0:
+    return False
+
+  sql = "update loving_bank set love_coin = %d where userid = %d"
+  try:
+    dbhelper.execute(sql%(update_sender_coin, data[KEY.SENDER]))
+  except :
+    return False
+
+  try:
+    dbhelper.execute(sql%(update_receiver_coin, data[KEY.RECEIVER]))
+    return True
+  except:
+    dbhelper.execute(sql%(sender[KEY.LOVE_COIN], data[KEY.SENDER]))
+    return False
+
