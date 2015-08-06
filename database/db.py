@@ -589,8 +589,11 @@ def remove_comment(data):
     return False
   sql = "delete from comment where id = %d and event_id = %d and author = %d"
   try:
-    dbhelper.execute(sql%(data[KEY.COMMENT_ID], data[KEY.EVENT_ID], data[KEY.ID]))
-    return True
+    n = dbhelper.execute(sql%(data[KEY.COMMENT_ID], data[KEY.EVENT_ID], data[KEY.ID]))
+    if n > 0:
+      return True
+    else:
+      return False
   except:
     return False
 
@@ -610,6 +613,7 @@ def get_comments(data):
     sql_result = dbhelper.execute_fetchall(sql%(data[KEY.EVENT_ID]))
     for each_result in sql_result:
       for each_id in each_result:
+        comment = {}
         comment[KEY.COMMENT_ID] = each_id
         comment = get_comment_info(comment)
         if comment is not None:
@@ -956,7 +960,10 @@ def is_sign_in(user_id):
 
 '''
 get user's neighbors
-@param includes user_id
+@param includes: user_id, user's id
+       options:  type, in data, indicates get a list of all user's information
+                       not in data, get the identity ids list
+@return
 '''
 def get_neighbor(data):
   neighbor_uid_list = []
@@ -967,13 +974,26 @@ def get_neighbor(data):
     return neighbor_uid_list
   DISTANCE = 25.0 # 25000m
   location_range = haversine.get_range(user[KEY.LONGITUDE], user[KEY.LATITUDE], DISTANCE)
-  sql = "select identity_id from user where " \
+  sql = "select id from user where " \
         "longitude > %f and longitude < %f " \
         "and latitude > %f and latitude < %f"
   sql_result = dbhelper.execute_fetchall(
     sql%(location_range[0], location_range[1], location_range[2], location_range[3]))
-  for each_result in sql_result:
-    neighbor_uid_list.append(each_result[0])
+
+  if KEY.TYPE in data:
+    for each_result in sql_result:
+      user = {}
+      user[KEY.ID] = each_result[0]
+      user = get_user_information(user)
+      if user is not None:
+        neighbor_uid_list.append(user)
+  else:
+    for each_result in sql_result:
+      user = {}
+      user[KEY.ID] = each_result[0]
+      user = get_user_information(user)
+      if user is not None:
+        neighbor_uid_list.append(user[KEY.IDENTITY_ID])
   return neighbor_uid_list
 
 '''
