@@ -28,8 +28,11 @@ class User_Relation_Manage_Handler(RequestHandler):
       else:
         resp[KEY.STATUS] = STATUS.ERROR
     elif params[KEY.OPERATION] == 2:
-      resp[KEY.USER_LIST] = db.query_static_relation(params)
-      resp[KEY.STATUS] = STATUS.OK
+      resp[KEY.USER_LIST] = db.query_follow(params)
+      if resp[KEY.USER_LIST] == -1:
+        resp[KEY.STATUS] = STATUS.ERROR
+      else:
+        resp[KEY.STATUS] = STATUS.OK
     else:
       resp[KEY.STATUS] = STATUS.ERROR
     

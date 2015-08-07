@@ -1173,19 +1173,29 @@ def get_answer_id_list(data):
   return answer_id_list
 
 '''
-query all the static relations. The relation is single direction.
-@params includes user's id.
-parameter type indicates type of static relation. two users in one direction could only have one type of relation.
-                 type:  0 indicates family relation.
+query all the users whom the user follows/follows the user.
+@params includes: user's id.
+                  type indicates type of static relation. two users in one direction could only have one type of relation.
+                  type: 0 indicates family relation.
                         1 indicates geography relation.
                         2 indicates career, interest and general friend relation.
+                  state indicates the follow relation.
+                  state: 0, query user's followed users
+                         1, query user's follower
 @return a list contains ids
+        -1 if fails
 '''
-def query_static_relation(data):
-  id_list = []
-  if KEY.ID not in data:
-    return id_list
-  sql = "select user_b from static_relation where user_a = %d"%data[KEY.ID]
+def query_follow(data):
+  if KEY.ID not in data and KEY.STATE not in data:
+    return user_list
+  if data[KEY.STATE] == 0:
+    sql = "select user_b from static_relation where user_a = %d"%data[KEY.ID]
+  elif data[KEY.STATE] == 1:
+    sql = "select user_a from static_relation where user_b = %d"%data[KEY.ID]
+  else:
+    return -1
+
+  user_list = []
   if KEY.TYPE in data:
     if data[KEY.TYPE] == 0 or data[KEY.TYPE] ==1 or data[KEY.TYPE] == 2:
       sql += " and type = %d"%data[KEY.TYPE]
@@ -1195,8 +1205,8 @@ def query_static_relation(data):
     for each_id in each_result:
       resp[KEY.ID] = each_id
       resp = get_user_information(resp)
-      id_list.append(resp)
-  return id_list
+      user_list.append(resp)
+  return user_list
 
 '''
 get supporters for an event
