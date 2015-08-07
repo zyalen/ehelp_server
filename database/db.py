@@ -11,6 +11,7 @@ import ast
 from dbhelper import dbhelper
 from utils import haversine
 from utils import KEY
+from utils import getToken
 
   
 '''
@@ -28,13 +29,17 @@ def add_account(data):
   md5_encode = hashlib.md5()
   md5_encode.update(data[KEY.PASSWORD]+salt)
   password = md5_encode.hexdigest()
-  sql_account = "insert into account (account, password, salt) values ('%s', '%s', '%s')"
+
+  chat_token = getToken.getToken(data[KEY.ACCOUNT], None, None)
+  sql_account = "insert into account (account, password, salt, chat_token) values ('%s', '%s', '%s', '%s')"
   sql_user = "insert into user (id, nickname, phone) values (%d, '%s', '%s')"
   try:
-    insert_id = dbhelper.insert(sql_account%(data[KEY.ACCOUNT], password, salt))
+    insert_id = dbhelper.insert(sql_account%(data[KEY.ACCOUNT], password, salt, chat_token))
     dbhelper.insert(sql_user%(insert_id, data[KEY.ACCOUNT], data[KEY.ACCOUNT]))
+    print insert_id
     return insert_id
-  except:
+  except Exception, e:
+    print e
     return -1
 
 
@@ -1408,3 +1413,21 @@ def love_coin_transfer(data):
     dbhelper.execute(sql%(sender[KEY.LOVE_COIN], data[KEY.SENDER]))
     return False
 
+'''
+get chat_token of an account.
+@params include user's account.
+@return chat_token of an account.
+        None if account not exists or database query error.
+'''
+def get_chat_token(data):
+  if KEY.ACCOUNT not in data:
+    return None
+  sql = "select chat_token from account where account = '%s'"
+  try:
+    res = dbhelper.execute_fetchone(sql%(data[KEY.ACCOUNT]))
+    if res is None:
+      return None
+    else:
+      return res[0]
+  except:
+    return None

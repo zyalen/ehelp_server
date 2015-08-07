@@ -20,6 +20,7 @@ class Regist_Handler(RequestHandler):
       resp[KEY.ACCOUNT] = params[KEY.ACCOUNT]
       resp[KEY.ID] = user_id
       resp[KEY.SALT] = db.get_salt(params)
+      resp[KEY.CHAT_TOKEN] = db.get_chat_token(params)
       bank_account_id = db.create_loving_bank(resp, 20, 0)
     else:
       resp[KEY.STATUS] = STATUS.ERROR
