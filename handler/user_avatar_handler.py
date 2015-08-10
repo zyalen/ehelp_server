@@ -8,7 +8,7 @@ from utils import STATUS
 
 import re
 
-img_pattern = re.compile(r'(\W|\w)*(.jpg)', re.S)
+img_pattern = re.compile(r'(\W|\w)*(.jpg|.bmp|.jpeg|.ico|.png)', re.S)
 vid_pattern = re.compile(r'(\W|\w)*(.mp4)', re.S)
 sou_pattern = re.compile(r'(\W|\w)*(.mp3)', re.S)
 
@@ -31,6 +31,9 @@ class UploadAvatar_Handler(RequestHandler):
     # save different types of file
     if re.match(img_pattern, filename):
       # save image
+      r_index = filename.rfind('.')
+      filename = filename[:r_index] + '.jpg'
+      print filename
       upload_path = "./static/avatar/" + filename
       resp[KEY.STATUS] = write_file(myfile, upload_path)
     elif re.match(vid_pattern, filename):

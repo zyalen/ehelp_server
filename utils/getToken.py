@@ -23,7 +23,7 @@ def getToken(id, nickname, imgUri):
   signature = hashlib.sha1(appsecret + str(nonce) + str(timestamp)).hexdigest()
 
   # the request info
-  test_data = {'userId': "asdfadsfas", 'name': nickname, 'portraitUri': imgUri}
+  test_data = {'userId': id, 'name': nickname, 'portraitUri': imgUri}
   test_data_urlencode = urllib.urlencode(test_data)
   requrl = "https://api.cn.ronghub.com/user/getToken.json"
   headerdata = {'Host': 'api.cn.ronghub.com', 'App-Key': appkey,
