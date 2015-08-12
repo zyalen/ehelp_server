@@ -1,4 +1,4 @@
-#!/usr/python
+__author__ = 'hanks'
 
 from tornado.web import RequestHandler
 from tornado.escape import json_encode
@@ -9,21 +9,16 @@ from utils import KEY
 from utils import STATUS
 from database import db
 
-
-class Remove_Event_Handler(RequestHandler):
+class Check_Transfer_Handler(RequestHandler):
   def post(self):
     params = utils.decode_params(self.request)
-    
+
     resp = {}
-    result = db.remove_event(params)
-    if KEY.EVENT_ID in params:
-      resp[KEY.EVENT_ID] = params[KEY.EVENT_ID]
-    if result:
-      resp[KEY.STATUS] = STATUS.OK
-    else:
+    h_list = db.get_trade(params)
+    if h_list == -1:
       resp[KEY.STATUS] = STATUS.ERROR
-    
+    else:
+      resp[KEY.H_LIST] = h_list
+      resp[KEY.STATUS] = STATUS.OK
+
     self.write(json_encode(resp))
-
-    
-

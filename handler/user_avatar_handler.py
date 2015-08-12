@@ -33,7 +33,6 @@ class UploadAvatar_Handler(RequestHandler):
       # save image
       r_index = filename.rfind('.')
       filename = filename[:r_index] + '.jpg'
-      print filename
       upload_path = "./static/avatar/" + filename
       resp[KEY.STATUS] = write_file(myfile, upload_path)
     elif re.match(vid_pattern, filename):

@@ -15,8 +15,3 @@ def get_range(longitude, latitude, distance):
   location_range = (longitude - dlng, longitude + dlng, latitude - dlat, latitude + dlat)
   return location_range
 
-if __name__ == '__main__':
-  longitude = 113.3942032
-  latitude = 23.2013323
-  print get_range(longitude, latitude, 5.0)
-

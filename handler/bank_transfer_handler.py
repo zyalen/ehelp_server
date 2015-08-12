@@ -14,7 +14,6 @@ class Bank_Transfer_Handler(RequestHandler):
 
     resp = {}
     if db.love_coin_transfer(params):
-      print "a"
       user = {}
       user[KEY.USER_ID] = params[KEY.SENDER]
       resp = db.get_user_loving_bank(user)

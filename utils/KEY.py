@@ -30,6 +30,8 @@ TYPE = 'type'
 IS_VERIFY = 'is_verify'
 IID_LIST = 'iid_list'
 USER_LIST = 'user_list'
+FOLLOW = 'follow'
+FOLLOWER = 'follower'
 
 # event
 EVENT_ID = 'event_id'
@@ -76,6 +78,7 @@ LOVE_COIN = 'love_coin'
 SCORE = 'score'
 SENDER = 'sender'
 RECEIVER = 'receiver'
+H_LIST = 'h_list'
 
 # answer
 ANSWER_ID = 'answer_id'

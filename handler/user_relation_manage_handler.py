@@ -33,6 +33,13 @@ class User_Relation_Manage_Handler(RequestHandler):
         resp[KEY.STATUS] = STATUS.ERROR
       else:
         resp[KEY.STATUS] = STATUS.OK
+    elif params[KEY.OPERATION] == 3:
+      relation = db.get_relation(params)
+      if relation == -1:
+        resp[KEY.STATUS] = STATUS.ERROR
+      else:
+        resp[KEY.TYPE] = relation
+        resp[KEY.STATUS] = STATUS.OK
     else:
       resp[KEY.STATUS] = STATUS.ERROR
     

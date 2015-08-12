@@ -13,11 +13,26 @@ from database import db
 class Sign_In_Handler(RequestHandler):
   def post(self):
     params = utils.decode_params(self.request)
-    result = db.sign_in(params)
+
     resp = {}
-    resp[KEY.ID] = params[KEY.ID]
-    if result:
-      resp[KEY.STATUS] = STATUS.OK
+    if KEY.OPERATION in params:
+      if params[KEY.OPERATION] == 0:
+        result = db.sign_in(params)
+        resp[KEY.ID] = params[KEY.ID]
+        if result:
+          resp[KEY.STATUS] = STATUS.OK
+        else:
+          resp[KEY.STATUS] = STATUS.ERROR
+      elif params[KEY.OPERATION] == 1:
+        result = db.is_sign_in(params[KEY.ID])
+        resp[KEY.ID] = params[KEY.ID]
+        resp[KEY.STATUS] = STATUS.OK
+        if result:
+          resp[KEY.TYPE] = 1
+        else:
+          resp[KEY.TYPE] = 0
+      else:
+        resp[KEY.STATUS] = STATUS.ERROR
     else:
       resp[KEY.STATUS] = STATUS.ERROR
     

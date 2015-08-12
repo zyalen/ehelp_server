@@ -7,6 +7,7 @@ import string
 import hashlib
 import MySQLdb
 import ast
+import traceback
 
 from dbhelper import dbhelper
 from utils import haversine
@@ -30,13 +31,14 @@ def add_account(data):
   md5_encode.update(data[KEY.PASSWORD]+salt)
   password = md5_encode.hexdigest()
 
-  chat_token = getToken.getToken(data[KEY.ACCOUNT], None, None)
-  sql_account = "insert into account (account, password, salt, chat_token) values ('%s', '%s', '%s', '%s')"
+  sql_account = "insert into account (account, password, salt) values ('%s', '%s', '%s')"
   sql_user = "insert into user (id, nickname, phone) values (%d, '%s', '%s')"
   try:
-    insert_id = dbhelper.insert(sql_account%(data[KEY.ACCOUNT], password, salt, chat_token))
+    insert_id = dbhelper.insert(sql_account%(data[KEY.ACCOUNT], password, salt))
     dbhelper.insert(sql_user%(insert_id, data[KEY.ACCOUNT], data[KEY.ACCOUNT]))
-    print insert_id
+    chat_token = getToken.getToken(insert_id, None, None)
+    sql_chat = "update account set chat_token = '%s' where id = %d"
+    dbhelper.execute(sql_chat%(chat_token, insert_id))
     return insert_id
   except Exception, e:
     print e
@@ -260,6 +262,18 @@ def get_user_information(data):
       user[KEY.REPUTATION] = float(res[10])
       user[KEY.IDENTITY_ID] = res[12]
       user[KEY.IS_VERIFY] = res[14]
+      user[KEY.FOLLOW] = 0
+      user[KEY.FOLLOWER] = 0
+
+      user_a = {'id': user[KEY.ID], 'state': 0}
+      follow = query_follow(user_a)
+      if follow != -1:
+        user[KEY.FOLLOW] = len(follow)
+      user_b = {'id': user[KEY.ID], 'state': 1}
+      follower = query_follow(user_b)
+      if follower != -1:
+        user[KEY.FOLLOWER] = len(follower)
+
       return user
   except:
     return None
@@ -281,11 +295,8 @@ def add_event(data):
   if KEY.ID not in data or KEY.TYPE not in data or KEY.TITLE not in data:
     return -1
   if KEY.LOVE_COIN in data:
-    user = {}
-    user[KEY.USER_ID] = data[KEY.ID]
-    bank_info = get_user_loving_bank(user)
-    if bank_info[KEY.LOVE_COIN] - data[KEY.LOVE_COIN] < 0:
-      return -2
+    if exchange(data) == False:
+      return False
   sql = "insert into event (launcher, type, time) values (%d, %d, now())"
   event_id = -1
   try:
@@ -343,7 +354,10 @@ def update_event(data):
     sql = "update event set state = %d where id = %d"
     try:
       dbhelper.execute(sql%(data[KEY.STATE], data[KEY.EVENT_ID]))
-      result &= True
+      if reward(data):
+        result &= True
+      else:
+        result &= False
     except:
       result &= False
 
@@ -427,8 +441,14 @@ def get_event_information(data):
       event_info[KEY.LONGITUDE] = float(sql_result[7])
       event_info[KEY.LATITUDE] = float(sql_result[8])
       event_info[KEY.STATE] = sql_result[9]
-      event_info[KEY.FOLLOW_NUMBER] = sql_result[10]
-      event_info[KEY.SUPPORT_NUMBER] = sql_result[11]
+
+      event = {}
+      event[KEY.EVENT_ID] = sql_result[0]
+      event[KEY.TYPE] = 1
+      event_info[KEY.FOLLOW_NUMBER] = len(get_supporters(event))
+      event[KEY.TYPE] = 2
+      event_info[KEY.SUPPORT_NUMBER] = len(get_supporters(event))
+
       event_info[KEY.GROUP_PTS] = float(sql_result[12])
       event_info[KEY.DEMAND_NUMBER] = sql_result[13]
       event_info[KEY.LOVE_COIN] = sql_result[14]
@@ -524,7 +544,7 @@ def user_event_manage(data):
   if KEY.ID not in data or KEY.EVENT_ID not in data:
     return False
   if KEY.OPERATION not in data:
-    return True
+    return False
   if data[KEY.OPERATION] < 0 or data[KEY.OPERATION] > 2:
     return False
   sql = "select launcher from event where id = %d"
@@ -936,7 +956,15 @@ def sign_in(data):
   try:
     sign_in_id = dbhelper.insert(sql%(data[KEY.ID]))
     if sign_in_id > 0:
-      return True
+      add_score = {}
+      add_score[KEY.ID] = user_id
+      add_score[KEY.OPERATION] = 0
+      add_score[KEY.LOVE_COIN] = 0
+      add_score[KEY.SCORE] = 100
+      if update_loving_bank(add_score):
+        return True
+      else:
+        return False
     else:
       return False
   except:
@@ -951,9 +979,11 @@ check whether a user has signed in today.
 '''
 def is_sign_in(user_id):
   result = False
-  sql = "select count(*) from sign_in where user_id = %d and to_days(time) = to_days(now())"
+  date_format = "\%Y-\%M-\%D \%H:\%i"
+  sql = "select count(*) from sign_in where user_id = %d and to_days(time) = to_days(now())"%(user_id)
+  # sql = "select count(*) from sign_in where user_id = %d and date_format(time, '%s') = date_format(now(), '%s')"%(user_id, date_format, date_format)
   try:
-    sql_result = dbhelper.execute_fetchone(sql%(user_id))[0]
+    sql_result = dbhelper.execute_fetchone(sql)[0]
     if sql_result > 0:
       result = True
     else:
@@ -1021,7 +1051,6 @@ def get_nearby_event(data):
         "longitude > %f and longitude < %f " \
         "and latitude > %f and latitude < %f"\
         %(location_range[0], location_range[1], location_range[2], location_range[3])
-  print sql
   if KEY.TYPE in data:
     sql += " and type = %d"%data[KEY.TYPE]
   if KEY.STATE in data:
@@ -1075,6 +1104,12 @@ def add_answer(data):
     if answer_id > 0:
       data[KEY.ANSWER_ID] = answer_id
       update_answer(data)
+      event = {}
+      event[KEY.ID] = data[KEY.AUTHOR_ID]
+      event[KEY.EVENT_ID] = data[KEY.EVENT_ID]
+      event[KEY.OPERATION] = 1
+      if user_event_manage(event) is False:
+        return -1
     return answer_id
   except:
     return -1
@@ -1087,6 +1122,17 @@ update information about an answer
 '''
 def update_answer(data):
   if KEY.ANSWER_ID not in data:
+    return False
+
+  sql = "select author_id, event_id from answer where id = %d"%data[KEY.ANSWER_ID]
+  try:
+    res = dbhelper.execute_fetchone(sql)
+    if res is None:
+      return False
+    author_id = res[0]
+    event_id = res[1]
+
+  except:
     return False
 
   result = True
@@ -1104,6 +1150,12 @@ def update_answer(data):
     try:
       dbhelper.execute(sql%(data[KEY.IS_ADOPTED], data[KEY.ANSWER_ID]))
       result &= True
+
+      event = {}
+      event[KEY.ID] = author_id
+      event[KEY.EVENT_ID] = event_id
+      event[KEY.OPERATION] = 2
+      result &= user_event_manage(event)
     except:
       result &= False
   if KEY.LIKING_NUM in data:
@@ -1191,8 +1243,8 @@ query all the users whom the user follows/follows the user.
         -1 if fails
 '''
 def query_follow(data):
-  if KEY.ID not in data and KEY.STATE not in data:
-    return user_list
+  if KEY.ID not in data or KEY.STATE not in data:
+    return -1
   if data[KEY.STATE] == 0:
     sql = "select user_b from static_relation where user_a = %d"%data[KEY.ID]
   elif data[KEY.STATE] == 1:
@@ -1333,13 +1385,14 @@ update information of user's loving bank.
                               2 indicates transform score to love_coin
                    love_coin, the number of love_coin to add/minus
                    score, the score number to add/minus
+                   (the switch score must be the multiple of 100)
 @return True if successfully update.
         False otherwise.
 '''
 def update_loving_bank(data):
-  if KEY.ID not in data and KEY.OPERATION not in data:
+  if KEY.ID not in data or KEY.OPERATION not in data:
     return False
-  if KEY.LOVE_COIN not in data and KEY.SCORE not in data:
+  if KEY.LOVE_COIN not in data or KEY.SCORE not in data:
     return False
 
   user = {}
@@ -1348,7 +1401,7 @@ def update_loving_bank(data):
   if bank_info is None:
     return False
 
-  exchange_rate = 1
+  exchange_rate = 0.01
   if data[KEY.OPERATION] == 0:
     update_love_coin = bank_info[KEY.LOVE_COIN] + data[KEY.LOVE_COIN]
     update_score = bank_info[KEY.SCORE] + data[KEY.SCORE]
@@ -1356,6 +1409,8 @@ def update_loving_bank(data):
     update_love_coin = bank_info[KEY.LOVE_COIN] - data[KEY.LOVE_COIN]
     update_score = bank_info[KEY.SCORE] - data[KEY.SCORE]
   elif data[KEY.OPERATION] == 2:
+    if data[KEY.SCORE] % 100 != 0:
+      return False
     update_love_coin = bank_info[KEY.LOVE_COIN] + data[KEY.SCORE] * exchange_rate
     update_score = bank_info[KEY.SCORE] - data[KEY.SCORE]
   else:
@@ -1380,7 +1435,7 @@ user_A transfer the love_coin to user_B
         False if fails
 '''
 def love_coin_transfer(data):
-  if KEY.SENDER not in data and KEY.RECEIVER not in data:
+  if KEY.SENDER not in data or KEY.RECEIVER not in data:
     return False
   if KEY.LOVE_COIN not in data:
     return False
@@ -1391,7 +1446,7 @@ def love_coin_transfer(data):
   receiver[KEY.USER_ID] = data[KEY.RECEIVER]
   sender = get_user_loving_bank(sender)
   receiver = get_user_loving_bank(receiver)
-  print sender, receiver
+
   if sender is None or receiver is None:
     return False
   update_sender_coin = sender[KEY.LOVE_COIN] - data[KEY.LOVE_COIN]
@@ -1401,33 +1456,243 @@ def love_coin_transfer(data):
     return False
 
   sql = "update loving_bank set love_coin = %d where userid = %d"
+  history_sql = "insert into coin_exchange (sender, receiver, time, lovecoin) values (%d, %d, now(), %d)"
   try:
     dbhelper.execute(sql%(update_sender_coin, data[KEY.SENDER]))
-  except :
+    dbhelper.execute(sql%(update_receiver_coin, data[KEY.RECEIVER]))
+    dbhelper.insert(history_sql%(data[KEY.SENDER], data[KEY.RECEIVER], data[KEY.LOVE_COIN]))
+    return True
+  except Exception, e:
+    traceback.print_exc()
     return False
 
-  try:
-    dbhelper.execute(sql%(update_receiver_coin, data[KEY.RECEIVER]))
-    return True
-  except:
-    dbhelper.execute(sql%(sender[KEY.LOVE_COIN], data[KEY.SENDER]))
-    return False
 
 '''
 get chat_token of an account.
-@params include user's account.
+@params include user's id.
 @return chat_token of an account.
         None if account not exists or database query error.
 '''
 def get_chat_token(data):
-  if KEY.ACCOUNT not in data:
+  if KEY.ID not in data:
     return None
-  sql = "select chat_token from account where account = '%s'"
+  sql = "select chat_token from account where id = '%s'"
   try:
-    res = dbhelper.execute_fetchone(sql%(data[KEY.ACCOUNT]))
+    res = dbhelper.execute_fetchone(sql%(data[KEY.ID]))
     if res is None:
       return None
     else:
       return res[0]
   except:
     return None
+
+'''
+get the relation between two users(one-sided relation)
+@param includes: id, user_a's id
+                 user_id, user_b's id
+@return 0 indicates families
+        2 indicates friends
+        -1 query fails
+        others indicate no relation
+'''
+def get_relation(data):
+  if KEY.ID not in data or KEY.USER_ID not in data:
+    return -1
+  sql = "select type from static_relation where user_a = %d and user_b = %d"
+  try:
+    res = dbhelper.execute_fetchone(sql%(data[KEY.ID], data[KEY.USER_ID]))
+    if res is None:
+      return -1
+    else:
+      return res[0]
+  except:
+    return -1
+
+'''
+save rewarding love_coin in the exchanged pool
+@param includes: id, user's id
+                 love_coin, the rewarding love_coin
+@return True if saves successfully
+        False if fails
+'''
+def exchange(data):
+  if KEY.ID not in data or KEY.LOVE_COIN not in data:
+    return False
+  coin_sql = "select love_coin from loving_bank where userid = %d"%data[KEY.ID]
+  exchange_sql = "select score_exchange from loving_bank where userid = %d"%data[KEY.ID]
+  try:
+    coin = dbhelper.execute_fetchone(coin_sql)
+    coin_exchange = dbhelper.execute_fetchone(exchange_sql)
+    if coin is None or coin_exchange is None:
+      return False
+    update_love_coin = coin[0] - data[KEY.LOVE_COIN]
+    update_exchange_coin = coin_exchange[0] + data[KEY.LOVE_COIN]
+    if update_love_coin < 0:
+      return False
+
+    update_sql = "update loving_bank set love_coin = %d, score_exchange = %d where userid = %d"
+    dbhelper.execute(update_sql%(update_love_coin, update_exchange_coin, data[KEY.ID]))
+  except:
+    return False
+
+'''
+get a history record of a transfer
+@param id, transfer_record's id
+@return record information
+        None if fails
+'''
+def get_transfer(data):
+  record_info = None
+  if KEY.ID not in data:
+    return record_info
+  sql = "select * from coin_exchange where id = %d"
+  try:
+    sql_result = dbhelper.execute_fetchone(sql%(data[KEY.ID]))
+    if sql_result is not None:
+      record_info = {}
+      record_info[KEY.ID] = sql_result[0]
+      record_info[KEY.SENDER] = sql_result[1]
+      record_info[KEY.RECEIVER] = sql_result[2]
+      record_info[KEY.LOVE_COIN] = sql_result[3]
+      record_info[KEY.TIME] = str(sql_result[4])
+    return record_info
+  except:
+    return None
+
+'''
+check the history of the transfer
+@param  id, user's id
+        type, 0 indicates send coins
+              1 indicates receive coins
+@return h_list, a list of transfer history
+        -1 if query fails
+'''
+def check_transfer(data):
+  if KEY.ID not in data or KEY.TYPE not in data:
+    return -1
+  sql = ""
+  if data[KEY.TYPE] == 0:
+    sql = "select id from coin_exchange where sender = %d"%data[KEY.ID]
+  elif data[KEY.TYPE] == 1:
+    sql = "select id from coin_exchange where receiver = %d"%data[KEY.ID]
+  else:
+    return -1
+  sql += " order by time DESC"
+  sql_result = dbhelper.execute_fetchall(sql)
+  h_list = []
+  for each_result in sql_result:
+    for each_id in each_result:
+      record = {}
+      record[KEY.ID] = each_id
+      record = get_transfer(record)
+      if record is not None:
+        h_list.append(record)
+  return h_list
+
+
+'''
+reward the love_coin to the supporters when the event stops
+@param includes: event_id, event's id
+@return True if succeed
+        False if fails
+'''
+def reward(data):
+  if KEY.EVENT_ID not in data:
+    return False
+  event = get_event_information(data)
+  if event == None:
+    return False
+  reward_coin = event[KEY.LOVE_COIN]
+  if reward_coin is None:
+    return False
+
+
+  sup_event = {}
+  sup_event[KEY.EVENT_ID] = data[KEY.EVENT_ID]
+  sup_event[KEY.TYPE] = 2
+  supporters = get_supporters(sup_event)
+  if supporters is None:
+    return False
+  num = len(supporters)
+
+
+  minus_sql = "update loving_bank set score_exchange = score_exchange - %d where userid = %d"
+  try:
+    userid = event[KEY.LAUNCHER_ID]
+    if userid is None:
+      return False
+    dbhelper.execute(minus_sql%(reward_coin, userid))
+  except Exception, e:
+    return False
+
+  add_sql = "update loving_bank set love_coin = love_coin + %d where userid = %d"
+  history_sql = "insert into coin_trade (eventid, sender, receiver, lovecoin, time) " \
+                "values (%d, %d, %d, %d, now())"
+  if num == 0:
+    try:
+      dbhelper.execute(add_sql%(reward_coin, event[KEY.LAUNCHER_ID]))
+      dbhelper.insert(history_sql%(data[KEY.EVENT_ID], event[KEY.LAUNCHER_ID], event[KEY.LAUNCHER_ID], reward_coin))
+      return True
+    except:
+      return False
+  else:
+    # todo If the avg_coin less than 1(which will be zero).
+    avg_coin = reward_coin / num;
+    try:
+      for i in range(0, num):
+        dbhelper.execute(add_sql%(avg_coin, supporters[i][KEY.ID]))
+        dbhelper.insert(history_sql%(data[KEY.EVENT_ID], event[KEY.LAUNCHER_ID], supporters[i][KEY.ID], reward_coin))
+      return True
+    except Exception, e:
+      print e
+      return False
+
+'''
+get all events by type and state
+@param includes: type, the type of events.
+                 state, the state of events.
+@return id_list, a list of event_id.
+        -1 if fails.
+'''
+def get_all_events(data):
+  if KEY.TYPE not in data or KEY.STATE not in data:
+    return -1
+  id_list = []
+  sql = "select id from event where type = %d and state = %d"%(data[KEY.TYPE], data[KEY.STATE])
+  sql += " order by time DESC"
+  sql_result = dbhelper.execute_fetchall(sql)
+  for each_result in sql_result:
+    for each_id in each_result:
+      id_list.append(each_id)
+  return id_list
+
+'''
+get the history of coin trade
+@param includes: sender, get the history as sender
+                 receiver, get the history as receiver
+@return h_list, a list of the history of coin trade
+        -1, if fails
+'''
+def get_trade(data):
+  if KEY.SENDER not in data and KEY.RECEIVER not in data:
+    return -1
+  sql = "select * from coin_trade where"
+  if KEY.SENDER in data and KEY.RECEIVER in data:
+    sql += " sender = %d or receiver = %d"%(data[KEY.SENDER], data[KEY.RECEIVER])
+  elif KEY.SENDER in data:
+    sql += " sender = %d"%data[KEY.SENDER]
+  elif KEY.RECEIVER in data:
+    sql += " receiver = %d"%data[KEY.RECEIVER]
+  sql += " order by time DESC"
+
+  h_list = []
+  sql_result = dbhelper.execute_fetchall(sql)
+  for each_result in sql_result:
+    history = {}
+    history[KEY.EVENT_ID] = each_result[1]
+    history[KEY.SENDER] = each_result[2]
+    history[KEY.RECEIVER] = each_result[3]
+    history[KEY.LOVE_COIN] = each_result[4]
+    history[KEY.TIME] = str(each_result[5])
+    h_list.append(history)
+  return h_list

@@ -38,4 +38,7 @@ def getToken(id, nickname, imgUri):
   responce = conn.getresponse()
   res = eval(responce.read())
 
-  return res["token"]
+  if 'token' in res:
+    return res['token']
+  else:
+    return None
