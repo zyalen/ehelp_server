@@ -1696,3 +1696,25 @@ def get_trade(data):
     history[KEY.TIME] = str(each_result[5])
     h_list.append(history)
   return h_list
+
+'''
+judge someone is the supporter of the event or not
+@param id, user's id
+       event_id, event's id
+@return 0, indicates no relation
+        1, indicates follow
+        2, indicates supporter
+        -1, if fails
+'''
+def judge_sup(data):
+  if KEY.ID not in data or KEY.EVENT_ID not in data:
+    return -1
+  sql = "select type from support_relation where supporter = %d and event_id = %d"
+  try:
+    res = dbhelper.execute_fetchone(sql%(data[KEY.ID], data[KEY.EVENT_ID]))
+    if res is None:
+      return 0
+    return res[0]
+  except Exception, e:
+    print e
+    return -1

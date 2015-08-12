@@ -9,16 +9,16 @@ from utils import KEY
 from utils import STATUS
 from database import db
 
-
-class Get_Supporter_Handler_Handler(RequestHandler):
+class Judge_Sup(RequestHandler):
   def post(self):
     params = utils.decode_params(self.request)
 
     resp = {}
-    if KEY.EVENT_ID not in params:
+    judge = db.judge_sup(params)
+    if judge == -1:
       resp[KEY.STATUS] = STATUS.ERROR
     else:
-      resp[KEY.USER_LIST] = db.get_supporters(params)
+      resp[KEY.TYPE] = judge
       resp[KEY.STATUS] = STATUS.OK
 
     self.write(json_encode(resp))
