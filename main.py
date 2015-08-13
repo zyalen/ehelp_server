@@ -40,6 +40,7 @@ from handler import get_chat_token_handler
 from handler import get_events_handler
 from handler import check_transfer_handler
 from handler import check_trade_handler
+from handler import judge_sup_handler
 
 os.chdir(os.path.join(os.getcwd(), os.path.dirname(sys.argv[0])))
 
@@ -84,6 +85,7 @@ def main():
       (r"/event/get_events", get_events_handler.Get_Events_Handler),
       (r"/user/check_trans", check_transfer_handler.Check_Transfer_Handler),
       (r"/user/check_trade", check_trade_handler.Check_Transfer_Handler),
+      (r"/user/judge_sup", judge_sup_handler.Judge_Sup),
       (r"/(.*)", tornado.web.StaticFileHandler, {"path": "static"}),
     ], debug=True)
   http_server = tornado.httpserver.HTTPServer(application)

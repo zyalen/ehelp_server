@@ -18,6 +18,12 @@ class Get_User_Information_Handler(RequestHandler):
     if user_info is None:
       resp[KEY.STATUS] = STATUS.ERROR
     else:
+      follow = {}
+      follow[KEY.ID] = user_info[KEY.ID]
+      follow[KEY.STATE] = 0
+      user_info[KEY.FOLLOW] = len(db.query_follow(follow))
+      follow[KEY.STATE] = 1
+      user_info[KEY.FOLLOWER] = len(db.query_follow(follow))
       resp.update(user_info)
       resp[KEY.STATUS] = STATUS.OK
     

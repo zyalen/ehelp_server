@@ -265,15 +265,6 @@ def get_user_information(data):
       user[KEY.FOLLOW] = 0
       user[KEY.FOLLOWER] = 0
 
-      user_a = {'id': user[KEY.ID], 'state': 0}
-      follow = query_follow(user_a)
-      if follow != -1:
-        user[KEY.FOLLOW] = len(follow)
-      user_b = {'id': user[KEY.ID], 'state': 1}
-      follower = query_follow(user_b)
-      if follower != -1:
-        user[KEY.FOLLOWER] = len(follower)
-
       return user
   except:
     return None
@@ -561,6 +552,10 @@ def user_event_manage(data):
     sql = "delete from support_relation where event_id = %d and supporter = %d"%(data[KEY.EVENT_ID], data[KEY.ID])
   else:
     sql = "replace into support_relation (event_id, supportee, supporter, type, time) values (%d, %d, %d, %d, now())"%(data[KEY.EVENT_ID], launcher_id, data[KEY.ID], data[KEY.OPERATION])
+
+
+    event = {}
+
   try:
     dbhelper.execute(sql)
   except:
